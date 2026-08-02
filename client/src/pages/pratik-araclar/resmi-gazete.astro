@@ -1,4 +1,7 @@
 ---
+// ÖNEMLİ: Bu satır sayfanın Vercel'de statik olarak cache'lenmesini engeller ve her istekte dinamik çalışmasını sağlar.
+export const prerender = false;
+
 import Layout from '../../layouts/Layout.astro';
 ---
 
@@ -69,7 +72,6 @@ import Layout from '../../layouts/Layout.astro';
       `;
 
       try {
-        // Doğrudan kendi Vercel API endpoint'imize istek atıyoruz
         const res = await fetch(`/api/resmi-gazete?date=${selectedDate}`);
         const result = await res.json();
 
@@ -123,7 +125,7 @@ import Layout from '../../layouts/Layout.astro';
       }
     }
 
-    // İlk yüklemede çalıştır
+    // İlk yüklemede çalıştır (Varsayılan olarak Cuma gününü seçmek test için daha pratiktir çünkü bugün pazar)
     fetchGazete(today);
 
     // Tarih değiştiğinde veriyi güncelle
