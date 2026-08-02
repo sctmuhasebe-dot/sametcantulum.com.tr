@@ -242,10 +242,68 @@ import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
       radio.addEventListener('change', () => {
         if (amountLabel) {
           const r = radio as HTMLInputElement;
-          amountLabel.textContent = r.value === 'netToBrut' ? 'Aylık Net Tutar (TL)' : 'Aylık Brüt Tutar (TL)';
+          amountLabel.textContent = r.value === 'netToBrut' ? 'Aylık Hedef Net Tutar (TL)' : 'Aylık Brüt Tutar (TL)';
         }
       });
     });
+
+    // Tek bir ay için brütten nete hesaplama motoru (Yardımcı Fonksiyon)
+    const calculateMonthNet = (brut: number, cumulativeGvMatrahBefore: number, taxBrackets: any[], asgariAylikGvIstisnasi: number, sgkTavan: number, damgaOrani: number) => {
+      let sgkBasis = Math.min(brut, sgkTavan);
+      let sgkIsci = sgkBasis * 0.14;
+      let issizlikIsci = sgkBasis * 0.01;
+      let gvMatrah = brut - (sgkIsci + issizlikIsci);
+      let currentCumulativeGvMatrah = cumulativeGvMatrahBefore + gvMatrah;
+
+      let calculatedGv = 0;
+      for (let b of taxBrackets) {
+        let prevLimit = taxBrackets[taxBrackets.indexOf(b) - 1]?.limit || 0;
+        if (currentCumulativeGvMatrah > prevLimit) {
+          let taxableInThisBracket = Math.min(currentCumulativeGvMatrah, b.limit) - Math.max(cumulativeGvMatrahBefore, prevLimit);
+          if (taxableInThisBracket > 0) {
+            calculatedGv += taxableInThisBracket * b.rate;
+          }
+        }
+      }
+
+      let finalGv = Math.max(0, calculatedGv - asgariAylikGvIstisnasi);
+      let finalDamga = brut * damgaOrani;
+      let net = brut - (sgkIsci + issizlikIsci + finalGv + finalDamga);
+
+      return {
+        brut,
+        sgkIsci,
+        issizlikIsci,
+        gvMatrah,
+        cumulativeGvMatrah: currentCumulativeGvMatrah,
+        calculatedGv,
+        asgariGvIstisnasi: asgariAylikGvIstisnasi,
+        finalGv,
+        finalDamga,
+        net
+      };
+    };
+
+    // Netten Brüte giden aylık iteratif yaklaşım fonksiyonu (Binary Search)
+    const findBrutFromNet = (targetNet: number, cumulativeGvMatrahBefore: number, taxBrackets: any[], asgariAylikGvIstisnasi: number, sgkTavan: number, damgaOrani: number) => {
+      let low = targetNet;
+      let high = targetNet * 2.5;
+      let brut = targetNet * 1.35;
+
+      for (let iter = 0; iter < 30; iter++) {
+        brut = (low + high) / 2;
+        let res = calculateMonthNet(brut, cumulativeGvMatrahBefore, taxBrackets, asgariAylikGvIstisnasi, sgkTavan, damgaOrani);
+        if (Math.abs(res.net - targetNet) < 0.01) {
+          break;
+        }
+        if (res.net < targetNet) {
+          low = brut;
+        } else {
+          high = brut;
+        }
+      }
+      return calculateMonthNet(brut, cumulativeGvMatrahBefore, taxBrackets, asgariAylikGvIstisnasi, sgkTavan, damgaOrani);
+    };
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -268,12 +326,10 @@ import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
           throw new Error('Lütfen geçerli bir tutar giriniz.');
         }
 
-        // 2026 Verileri ve Sabitler
         const monthsNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
         const sgkTavan = 297270.00;
         const damgaOrani = 0.00759;
         
-        // 2026 Gelir Vergisi Dilimleri (Kümülatif)
         const taxBrackets = [
           { limit: 158000, rate: 0.15 },
           { limit: 330000, rate: 0.20 },
@@ -282,22 +338,11 @@ import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
           { limit: Infinity, rate: 0.40 }
         ];
 
-        // 2026 Asgari Ücret Referansları (Aylık Brüt: 33.030,00 TL kabulüyle)
         const asgariBrut = 33030.00;
         const asgariSgkIsci = asgariBrut * 0.14;
         const asgariIssizlikIsci = asgariBrut * 0.01;
         const asgariGvMatrahi = asgariBrut - (asgariSgkIsci + asgariIssizlikIsci);
-        // Yıl boyu sabit asgari ücret vergi istisnası (Yaklaşık aylık baz)
         const asgariAylikGvIstisnasi = asgariGvMatrahi * 0.15; 
-
-        let targetBrut = 0;
-
-        if (selectedType === 'brutToNet') {
-          targetBrut = inputAmount;
-        } else {
-          // Net'ten Brüt'e yaklaşım (iteratif simülasyon)
-          targetBrut = inputAmount * 1.35; 
-        }
 
         let monthlyDetails = [];
         let cumulativeGvMatrah = 0;
@@ -306,53 +351,24 @@ import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
         let totalSgk = 0;
         let totalTax = 0;
 
-        // 12 Ay Simülasyonu
         for (let i = 0; i < 12; i++) {
-          let brut = targetBrut;
-          let sgkBasis = Math.min(brut, sgkTavan);
-          let sgkIsci = sgkBasis * 0.14;
-          let issizlikIsci = sgkBasis * 0.01;
-          let gvMatrah = brut - (sgkIsci + issizlikIsci);
-          
-          cumulativeGvMatrah += gvMatrah;
-
-          // Gelir Vergisi Hesaplama (Kümülatif Dilim)
-          let calculatedGv = 0;
-          let remainingMatrah = gvMatrah;
-          let prevLimit = 0;
-          
-          for (let b of taxBrackets) {
-            let taxableInThisBracket = Math.min(cumulativeGvMatrah, b.limit) - (cumulativeGvMatrah - gvMatrah);
-            if (taxableInThisBracket > 0) {
-              calculatedGv += taxableInThisBracket * b.rate;
-            }
-            if (cumulativeGvMatrah <= b.limit) break;
+          let monthResult;
+          if (selectedType === 'brutToNet') {
+            monthResult = calculateMonthNet(inputAmount, cumulativeGvMatrah, taxBrackets, asgariAylikGvIstisnasi, sgkTavan, damgaOrani);
+          } else {
+            monthResult = findBrutFromNet(inputAmount, cumulativeGvMatrah, taxBrackets, asgariAylikGvIstisnasi, sgkTavan, damgaOrani);
           }
-          // Basitleştirilmiş vergi hesaplama doğrulaması
-          if (calculatedGv <= 0) calculatedGv = gvMatrah * 0.15;
 
-          let finalGv = Math.max(0, calculatedGv - asgariAylikGvIstisnasi);
-          let finalDamga = brut * damgaOrani;
-          let net = brut - (sgkIsci + issizlikIsci + finalGv + finalDamga);
-
+          cumulativeGvMatrah = monthResult.cumulativeGvMatrah;
           monthlyDetails.push({
             month: monthsNames[i],
-            brut,
-            sgkIsci,
-            issizlikIsci,
-            gvMatrah,
-            cumulativeGvMatrah,
-            calculatedGv,
-            asgariGvIstisnasi: asgariAylikGvIstisnasi,
-            finalGv,
-            finalDamga,
-            net
+            ...monthResult
           });
 
-          totalBrut += brut;
-          totalNet += net;
-          totalSgk += (sgkIsci + issizlikIsci);
-          totalTax += finalGv;
+          totalBrut += monthResult.brut;
+          totalNet += monthResult.net;
+          totalSgk += (monthResult.sgkIsci + monthResult.issizlikIsci);
+          totalTax += monthResult.finalGv;
         }
 
         const avgNetVal = totalNet / 12;
@@ -365,6 +381,7 @@ import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
         const totalWorkerDeductionsEl = document.getElementById('total-worker-deductions');
         if (totalWorkerDeductionsEl) totalWorkerDeductionsEl.textContent = formatTL(workerDeductions);
 
+        // İlk ayın brütü üzerinden işveren maliyeti hesabı
         const monthlyBrut = monthlyDetails[0].brut;
         const sgkBasisMonthly = Math.min(monthlyBrut, sgkTavan);
         const employerSgkRate = sgkIndirimVal === 5 ? 0.155 : 0.205; 
