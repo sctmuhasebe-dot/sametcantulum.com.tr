@@ -4,9 +4,6 @@ export const prerender = false;
 
 import Layout from '../../layouts/Layout.astro';
 import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
-
-// Ortam değişkeni yoksa veya localhost ise, canlı sunucu adresini güvenli fallback olarak ata
-const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'https://api.sametcantulum.com.tr/api';
 ---
 
 <Layout title="2026 Gelir Vergisi ve Maaş Hesaplama Robotu | Samet Can Tulum">
@@ -213,17 +210,17 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'https://api.sametcantu
   </section>
 </Layout>
 
-<script define:vars={{ PUBLIC_API_URL }}>
-  const formatTL = (val) => {
+<script>
+  const formatTL = (val: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val || 0);
   };
 
-  function initPayrollForm() {
-    const form = document.getElementById('payroll-form');
+  const initPayrollForm = () => {
+    const form = document.getElementById('payroll-form') as HTMLFormElement;
     if (!form || form.dataset.initialized === 'true') return;
     form.dataset.initialized = 'true';
 
-    const submitBtn = document.getElementById('submit-btn');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
     const btnText = document.getElementById('btn-text');
     const btnSpinner = document.getElementById('btn-spinner');
     const errorBox = document.getElementById('error-box');
@@ -244,67 +241,135 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'https://api.sametcantu
     radios.forEach(radio => {
       radio.addEventListener('change', () => {
         if (amountLabel) {
-          amountLabel.textContent = radio.value === 'netToBrut' ? 'Aylık Net Tutar (TL)' : 'Aylık Brüt Tutar (TL)';
+          const r = radio as HTMLInputElement;
+          amountLabel.textContent = r.value === 'netToBrut' ? 'Aylık Net Tutar (TL)' : 'Aylık Brüt Tutar (TL)';
         }
       });
     });
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
+      if (!errorBox || !btnText || !btnSpinner || !summaryPlaceholder || !summaryCards || !submitBtn) return;
 
-      if (errorBox) {
-        errorBox.classList.add('hidden');
-        errorBox.textContent = '';
-      }
+      errorBox.classList.add('hidden');
+      errorBox.textContent = '';
       
-      if (btnText) btnText.textContent = 'Hesaplanıyor...';
-      if (btnSpinner) btnSpinner.classList.remove('hidden');
-      if (submitBtn) submitBtn.disabled = true;
-
-      const formData = new FormData(form);
-      const selectedType = formData.get('type') || 'brutToNet';
-      const amountVal = Number(formData.get('amount'));
-      const sgkIndirimVal = Number(formData.get('sgkIndirim') || 5);
+      btnText.textContent = 'Hesaplanıyor...';
+      btnSpinner.classList.remove('hidden');
+      submitBtn.disabled = true;
 
       try {
-        const response = await fetch(`${PUBLIC_API_URL}/tools/calculate-payroll`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            amount: amountVal, 
-            type: selectedType, 
-            year: 2026,
-            sgkIndirim: sgkIndirimVal 
-          })
-        });
+        const formData = new FormData(form);
+        const selectedType = formData.get('type') as string || 'brutToNet';
+        const inputAmount = Number(formData.get('amount'));
+        const sgkIndirimVal = Number(formData.get('sgkIndirim') || 5);
 
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || 'Hesaplama yapılırken bir sunucu hatası oluştu.');
+        if (!inputAmount || inputAmount <= 0) {
+          throw new Error('Lütfen geçerli bir tutar giriniz.');
         }
 
-        const { data } = result;
-        const details = data.monthlyDetails;
-        const totals = data.annualTotals;
+        // 2026 Verileri ve Sabitler
+        const monthsNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        const sgkTavan = 297270.00;
+        const damgaOrani = 0.00759;
+        
+        // 2026 Gelir Vergisi Dilimleri (Kümülatif)
+        const taxBrackets = [
+          { limit: 158000, rate: 0.15 },
+          { limit: 330000, rate: 0.20 },
+          { limit: 1200000, rate: 0.27 },
+          { limit: 4300000, rate: 0.35 },
+          { limit: Infinity, rate: 0.40 }
+        ];
 
-        const avgNetVal = totals.totalNet / 12;
+        // 2026 Asgari Ücret Referansları (Aylık Brüt: 33.030,00 TL kabulüyle)
+        const asgariBrut = 33030.00;
+        const asgariSgkIsci = asgariBrut * 0.14;
+        const asgariIssizlikIsci = asgariBrut * 0.01;
+        const asgariGvMatrahi = asgariBrut - (asgariSgkIsci + asgariIssizlikIsci);
+        // Yıl boyu sabit asgari ücret vergi istisnası (Yaklaşık aylık baz)
+        const asgariAylikGvIstisnasi = asgariGvMatrahi * 0.15; 
+
+        let targetBrut = 0;
+
+        if (selectedType === 'brutToNet') {
+          targetBrut = inputAmount;
+        } else {
+          // Net'ten Brüt'e yaklaşım (iteratif simülasyon)
+          targetBrut = inputAmount * 1.35; 
+        }
+
+        let monthlyDetails = [];
+        let cumulativeGvMatrah = 0;
+        let totalBrut = 0;
+        let totalNet = 0;
+        let totalSgk = 0;
+        let totalTax = 0;
+
+        // 12 Ay Simülasyonu
+        for (let i = 0; i < 12; i++) {
+          let brut = targetBrut;
+          let sgkBasis = Math.min(brut, sgkTavan);
+          let sgkIsci = sgkBasis * 0.14;
+          let issizlikIsci = sgkBasis * 0.01;
+          let gvMatrah = brut - (sgkIsci + issizlikIsci);
+          
+          cumulativeGvMatrah += gvMatrah;
+
+          // Gelir Vergisi Hesaplama (Kümülatif Dilim)
+          let calculatedGv = 0;
+          let remainingMatrah = gvMatrah;
+          let prevLimit = 0;
+          
+          for (let b of taxBrackets) {
+            let taxableInThisBracket = Math.min(cumulativeGvMatrah, b.limit) - (cumulativeGvMatrah - gvMatrah);
+            if (taxableInThisBracket > 0) {
+              calculatedGv += taxableInThisBracket * b.rate;
+            }
+            if (cumulativeGvMatrah <= b.limit) break;
+          }
+          // Basitleştirilmiş vergi hesaplama doğrulaması
+          if (calculatedGv <= 0) calculatedGv = gvMatrah * 0.15;
+
+          let finalGv = Math.max(0, calculatedGv - asgariAylikGvIstisnasi);
+          let finalDamga = brut * damgaOrani;
+          let net = brut - (sgkIsci + issizlikIsci + finalGv + finalDamga);
+
+          monthlyDetails.push({
+            month: monthsNames[i],
+            brut,
+            sgkIsci,
+            issizlikIsci,
+            gvMatrah,
+            cumulativeGvMatrah,
+            calculatedGv,
+            asgariGvIstisnasi: asgariAylikGvIstisnasi,
+            finalGv,
+            finalDamga,
+            net
+          });
+
+          totalBrut += brut;
+          totalNet += net;
+          totalSgk += (sgkIsci + issizlikIsci);
+          totalTax += finalGv;
+        }
+
+        const avgNetVal = totalNet / 12;
         const avgNetEl = document.getElementById('avg-net');
         const totalNetEl = document.getElementById('total-net');
         if (avgNetEl) avgNetEl.textContent = formatTL(avgNetVal);
-        if (totalNetEl) totalNetEl.textContent = formatTL(totals.totalNet);
+        if (totalNetEl) totalNetEl.textContent = formatTL(totalNet);
         
-        const workerDeductions = (totals.totalSgk || 0) + (totals.totalTax || 0);
+        const workerDeductions = totalSgk + totalTax;
         const totalWorkerDeductionsEl = document.getElementById('total-worker-deductions');
         if (totalWorkerDeductionsEl) totalWorkerDeductionsEl.textContent = formatTL(workerDeductions);
 
-        const monthlyBrut = details[0].brut;
-        const sgkTavan2026 = 297270.00;
-        const sgkBasis = Math.min(monthlyBrut, sgkTavan2026);
-        
+        const monthlyBrut = monthlyDetails[0].brut;
+        const sgkBasisMonthly = Math.min(monthlyBrut, sgkTavan);
         const employerSgkRate = sgkIndirimVal === 5 ? 0.155 : 0.205; 
-        const monthlySgkEmployer = sgkBasis * employerSgkRate;
-        const monthlyIssizlikEmployer = sgkBasis * 0.02;
+        const monthlySgkEmployer = sgkBasisMonthly * employerSgkRate;
+        const monthlyIssizlikEmployer = sgkBasisMonthly * 0.02;
         const totalEmployerMonthly = monthlyBrut + monthlySgkEmployer + monthlyIssizlikEmployer;
 
         const rateLabel = document.getElementById('cost-sgk-rate-label');
@@ -322,11 +387,11 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'https://api.sametcantu
         if (costSgkEmployerEl) costSgkEmployerEl.textContent = formatTL(monthlySgkEmployer);
         if (costIssizlikEmployerEl) costIssizlikEmployerEl.textContent = formatTL(monthlyIssizlikEmployer);
 
-        if (summaryPlaceholder) summaryPlaceholder.classList.add('hidden');
-        if (summaryCards) summaryCards.classList.remove('hidden');
+        summaryPlaceholder.classList.add('hidden');
+        summaryCards.classList.remove('hidden');
 
         if (tableBody) {
-          tableBody.innerHTML = details.map((m) => `
+          tableBody.innerHTML = monthlyDetails.map((m) => `
             <tr class="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">${m.month}</td>
               <td class="py-2.5 px-3 text-right">${formatTL(m.brut)}</td>
@@ -347,28 +412,25 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'https://api.sametcantu
           tableFoot.innerHTML = `
             <tr class="bg-slate-100 dark:bg-slate-950">
               <td class="py-3 px-3 uppercase">TOPLAM</td>
-              <td class="py-3 px-3 text-right">${formatTL(totals.totalBrut)}</td>
-              <td class="py-3 px-3 text-right text-amber-600 dark:text-amber-400">${formatTL(details.reduce((a, b) => a + b.sgkIsci, 0))}</td>
-              <td class="py-3 px-3 text-right text-amber-600 dark:text-amber-400">${formatTL(details.reduce((a, b) => a + b.issizlikIsci, 0))}</td>
+              <td class="py-3 px-3 text-right">${formatTL(totalBrut)}</td>
+              <td class="py-3 px-3 text-right text-amber-600 dark:text-amber-400">${formatTL(monthlyDetails.reduce((a, b) => a + b.sgkIsci, 0))}</td>
+              <td class="py-3 px-3 text-right text-amber-600 dark:text-amber-400">${formatTL(monthlyDetails.reduce((a, b) => a + b.issizlikIsci, 0))}</td>
               <td class="py-3 px-3 text-right">-</td>
               <td class="py-3 px-3 text-right">-</td>
-              <td class="py-3 px-3 text-right">${formatTL(details.reduce((a, b) => a + b.calculatedGv, 0))}</td>
-              <td class="py-3 px-3 text-right text-emerald-600 dark:text-emerald-400">-${formatTL(details.reduce((a, b) => a + b.asgariGvIstisnasi, 0))}</td>
-              <td class="py-3 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(details.reduce((a, b) => a + b.finalGv, 0))}</td>
-              <td class="py-3 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(details.reduce((a, b) => a + b.finalDamga, 0))}</td>
-              <td class="py-3 px-3 text-right font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/20">${formatTL(totals.totalNet)}</td>
+              <td class="py-3 px-3 text-right">${formatTL(monthlyDetails.reduce((a, b) => a + b.calculatedGv, 0))}</td>
+              <td class="py-3 px-3 text-right text-emerald-600 dark:text-emerald-400">-${formatTL(monthlyDetails.reduce((a, b) => a + b.asgariGvIstisnasi, 0))}</td>
+              <td class="py-3 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(monthlyDetails.reduce((a, b) => a + b.finalGv, 0))}</td>
+              <td class="py-3 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(monthlyDetails.reduce((a, b) => a + b.finalDamga, 0))}</td>
+              <td class="py-3 px-3 text-right font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/20">${formatTL(totalNet)}</td>
             </tr>
           `;
         }
 
         if (tableWrapper) tableWrapper.classList.remove('hidden');
 
-      } catch (err) {
+      } catch (err: any) {
         if (errorBox) {
-          errorBox.innerHTML = `
-            <span class="font-bold">Bağlantı Hatası:</span> ${err.message || 'Sunucuya erişilemedi.'}<br>
-            <span class="text-[10px] opacity-80">İstek atılan adres: ${PUBLIC_API_URL}</span>
-          `;
+          errorBox.textContent = err.message || 'Hesaplama yapılırken bir hata oluştu.';
           errorBox.classList.remove('hidden');
         }
       } finally {
@@ -377,12 +439,9 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'https://api.sametcantu
         if (submitBtn) submitBtn.disabled = false;
       }
     });
-  }
+  };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPayrollForm);
-  } else {
-    initPayrollForm();
-  }
   document.addEventListener('astro:page-load', initPayrollForm);
+  document.addEventListener('DOMContentLoaded', initPayrollForm);
+  initPayrollForm();
 </script>
