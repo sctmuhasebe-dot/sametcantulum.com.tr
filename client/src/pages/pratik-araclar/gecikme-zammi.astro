@@ -1,143 +1,183 @@
 ---
 // client/src/pages/pratik-araclar/gecikme-zammi.astro
+export const prerender = false;
+
 import Layout from '../../layouts/Layout.astro';
 import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
 
 const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/api';
 ---
 
-<Layout title="Gecikme Zammı ve Faizi Hesaplama (2026 Güncel)">
-  <section class="max-w-4xl mx-auto py-8 px-4 sm:px-6">
+<Layout title="Gecikme Zammı ve Faizi Hesaplama (2026 Güncel) | Samet Can Tulum">
+  <section class="max-w-7xl mx-auto py-6 sm:py-8 px-3 sm:px-6 lg:px-8 space-y-6 bg-slate-50 dark:bg-slate-950 min-h-screen">
     
-    <!-- Başlık -->
-    <header class="text-center space-y-2 mb-8">
-      <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Gecikme Zammı & Faizi Hesaplama</h1>
-      <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base">
-        Vergi, SGK ve kamu alacakları için güncel mevzuata uygun gecikme zammı ve faizi hesabı.
+    <!-- Üst Başlık -->
+    <div class="border-b border-slate-200 dark:border-slate-800 pb-4 sm:pb-5">
+      <div class="flex flex-wrap items-center gap-2 mb-2">
+        <span class="px-2.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-bold font-mono">2026 GÜNCEL</span>
+        <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Vergi, SGK ve Kamu Alacakları Uyumlu</span>
+      </div>
+      <h1 class="text-xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        Gecikme Zammı & Faizi Hesaplama Motoru
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-1">
+        Vergi, SGK ve diğer kamu alacaklarınız için yasal oranlar üzerinden günlük ve aylık bazda gecikme zammı tutarını otomatik hesaplayın.
       </p>
-    </header>
+    </div>
 
-    <!-- Form ve Sonuç Kartı Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- ANA FORM VE ÖZET ALANI -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       
-      <!-- Form -->
-      <div class="lg:col-span-5 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+      <!-- SOL KOLON: Form Parametreleri -->
+      <div class="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm space-y-4 sm:space-y-5">
+        <div class="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
+          <h2 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="text-blue-500">📝</span> Alacak ve Tarih Bilgileri
+          </h2>
+          <span class="text-[11px] text-slate-400 font-mono">Oran Kontrollü</span>
+        </div>
+
         <form id="calcForm" class="space-y-4">
-          
+          <!-- Asıl Alacak Tutarı -->
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">
+            <label for="amount" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Asıl Alacak Tutarı (TL)
             </label>
-            <input 
-              type="number" 
-              id="amount" 
-              step="0.01"
-              placeholder="Örn: 50000" 
-              required 
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
-            />
+            <div class="relative flex items-center">
+              <input
+                type="number"
+                id="amount"
+                name="amount"
+                step="0.01"
+                min="0"
+                placeholder="50000.00"
+                required
+                class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3.5 py-2.5 pr-14 text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+              <span class="absolute right-3 text-xs text-slate-400 font-bold pointer-events-none">₺</span>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">
-              Vade / Son Ödeme Tarihi
-            </label>
-            <input 
-              type="date" 
-              id="dueDate" 
-              required 
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+          <!-- Tarih Bilgileri -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="dueDate" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Vade / Son Ödeme</label>
+              <input
+                type="date"
+                id="dueDate"
+                name="dueDate"
+                required
+                class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label for="paymentDate" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Ödeme / Hesap Tarihi</label>
+              <input
+                type="date"
+                id="paymentDate"
+                name="paymentDate"
+                required
+                class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
+          <!-- Uygulanacak Aylık Oran -->
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">
-              Ödeme Yapılacak / Hesaplama Tarihi
-            </label>
-            <input 
-              type="date" 
-              id="paymentDate" 
-              required 
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">
+            <label for="monthlyRate" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Uygulanacak Aylık Oran (%)
             </label>
-            <input 
-              type="number" 
-              id="monthlyRate" 
-              step="0.01"
-              value="4.50" 
-              required 
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
-            />
-            <span class="text-xs text-slate-400 mt-1 block">
-              *Resmi gazete oranlarına göre güncelleyebilirsiniz.
-            </span>
+            <div class="relative flex items-center">
+              <input
+                type="number"
+                id="monthlyRate"
+                name="monthlyRate"
+                step="0.01"
+                min="0"
+                value="4.50"
+                required
+                class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3.5 py-2.5 pr-14 text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+              <span class="absolute right-3 text-xs text-slate-400 font-bold pointer-events-none">% / Ay</span>
+            </div>
+            <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block">Resmi Gazete yasal oranlarına göre güncelleyebilirsiniz.</span>
           </div>
 
-          <button 
-            type="submit" 
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-md transition-colors duration-200 mt-2"
+          <button
+            type="submit"
+            id="submit-btn"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-4 rounded-lg transition-all text-xs uppercase tracking-wider shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 cursor-pointer"
           >
-            Hesapla
+            <span id="btn-text">Gecikme Zammı Hesapla</span>
+            <div id="btn-spinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </button>
-
         </form>
+
+        <div id="error-box" class="hidden p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-xs font-medium space-y-1"></div>
       </div>
 
-      <!-- Sonuç Ekranı -->
-      <div class="lg:col-span-7 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">
-            Hesaplama Özeti
+      <!-- SAĞ KOLON: Özet Sonuç Kartları -->
+      <div class="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+        <div class="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
+          <h2 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="text-blue-500">📊</span> Hesaplama Özeti ve Sonuçlar
           </h2>
-          
-          <div id="results" class="hidden space-y-4">
-            
-            <div class="grid grid-cols-2 gap-4">
-              <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
-                <span class="text-xs text-slate-500 dark:text-slate-400 block">Gecikilen Süre</span>
-                <span id="resDuration" class="font-bold text-slate-800 dark:text-slate-200">0 Ay 0 Gün</span>
-                <span id="resTotalDays" class="text-xs text-slate-400 block">(Toplam 0 Gün)</span>
-              </div>
+          <span id="resRate-badge" class="text-[11px] font-mono bg-slate-100 dark:bg-slate-950 px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">Oran: -</span>
+        </div>
 
-              <div class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
-                <span class="text-xs text-slate-500 dark:text-slate-400 block">Uygulanan Oran</span>
-                <span id="resRate" class="font-bold text-slate-800 dark:text-slate-200">%0</span>
-              </div>
+        <div id="placeholder" class="py-12 text-center text-xs text-slate-400">
+          Gecikme zammı ve toplam tutarı hesaplamak için ilgili tarihleri ve asıl alacak tutarını giriniz.
+        </div>
+
+        <div id="results" class="hidden space-y-4">
+          <!-- Genel Toplam Kartı -->
+          <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span class="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Toplam Ödenecek Tutar</span>
+              <p id="resTotalPayout" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5 truncate">0,00 TL</p>
             </div>
-
-            <div class="space-y-2 pt-2">
-              <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Asıl Alacak Tutarı</span>
-                <span id="resPrincipal" class="font-semibold text-slate-900 dark:text-white">0,00 TL</span>
-              </div>
-
-              <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700 text-amber-600 dark:text-amber-400">
-                <span class="font-medium">Hesaplanan Gecikme Zammı</span>
-                <span id="resPenalty" class="font-bold">0,00 TL</span>
-              </div>
-            </div>
-
-            <div class="p-4 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-100 dark:border-blue-900/50 flex justify-between items-center mt-4">
-              <span class="font-bold text-blue-900 dark:text-blue-200">Toplam Ödenecek Tutar</span>
-              <span id="resTotalPayout" class="text-xl font-extrabold text-blue-700 dark:text-blue-400">0,00 TL</span>
-            </div>
-
+            <button id="print-btn" type="button" class="px-3 py-1.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white rounded text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
+              <span>🖨️</span> Yazdır / PDF
+            </button>
           </div>
 
-          <!-- İlk Durum Uyarısı -->
-          <div id="placeholder" class="h-48 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M15 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 002-2H7a2 2 0 002 2v14a2 2 0 002 2z" />
-            </svg>
-            <span>Hesaplama yapmak için bilgileri girip butonuna tıklayın.</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Süre ve Oran Bilgisi -->
+            <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg space-y-2">
+              <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
+                <h3 class="font-bold text-xs text-slate-800 dark:text-slate-200 uppercase">Zaman Analizi</h3>
+                <span id="resTotalDays" class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">Toplam 0 Gün</span>
+              </div>
+              <div class="flex justify-between text-xs text-slate-600 dark:text-slate-400 gap-2">
+                <span>Gecikilen Süre:</span>
+                <span id="resDuration" class="font-mono text-slate-900 dark:text-white font-semibold truncate">0 Ay 0 Gün</span>
+              </div>
+              <div class="flex justify-between text-xs text-slate-600 dark:text-slate-400 gap-2">
+                <span>Uygulanan Aylık Oran:</span>
+                <span id="resRate" class="font-mono text-slate-900 dark:text-white font-semibold truncate">%0</span>
+              </div>
+            </div>
+
+            <!-- Tutar Detay Kartı -->
+            <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg space-y-2">
+              <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
+                <h3 class="font-bold text-xs text-slate-800 dark:text-slate-200 uppercase">Alacak Detayları</h3>
+                <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Yasal Esas</span>
+              </div>
+              <div class="flex justify-between text-xs text-slate-600 dark:text-slate-400 gap-2">
+                <span>Asıl Alacak Tutarı:</span>
+                <span id="resPrincipal" class="font-mono text-slate-900 dark:text-white font-semibold truncate">0,00 TL</span>
+              </div>
+              <div class="flex justify-between text-xs text-slate-600 dark:text-slate-400 gap-2">
+                <span>Hesaplanan Gecikme Zammı:</span>
+                <span id="resPenalty" class="font-mono text-amber-600 dark:text-amber-400 font-semibold truncate">0,00 TL</span>
+              </div>
+            </div>
           </div>
 
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-600 dark:text-slate-400 space-y-1">
+            <p>💡 <strong>Yasal Not:</strong> Gecikme zammı hesaplamalarında kesirli aylar için gün esasına göre oranlama yapılır. Resmi kurum bildirgelerinde güncel katsayılar esas alınmalıdır.</p>
+          </div>
         </div>
       </div>
 
@@ -150,53 +190,92 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
 </Layout>
 
 <script define:vars={{ PUBLIC_API_URL }}>
-  const form = document.getElementById('calcForm');
-  const results = document.getElementById('results');
-  const placeholder = document.getElementById('placeholder');
+  const formatTL = (num) => {
+    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num || 0) + ' TL';
+  };
 
-  const paymentDateInput = document.getElementById('paymentDate');
-  if (paymentDateInput) {
-    paymentDateInput.valueAsDate = new Date();
-  }
+  const initLateFeeForm = () => {
+    const form = document.getElementById('calcForm');
+    if (!form || form.dataset.initialized === 'true') return;
+    form.dataset.initialized = 'true';
 
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const amount = parseFloat(document.getElementById('amount').value);
-    const dueDate = document.getElementById('dueDate').value;
-    const paymentDate = document.getElementById('paymentDate').value;
-    const monthlyRate = parseFloat(document.getElementById('monthlyRate').value);
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    const errorBox = document.getElementById('error-box');
 
-    try {
-      const response = await fetch(`${PUBLIC_API_URL}/tools/calculate-late-fee`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, dueDate, paymentDate, monthlyRate })
-      });
+    const placeholder = document.getElementById('placeholder');
+    const results = document.getElementById('results');
+    const printBtn = document.getElementById('print-btn');
 
-      const resData = await response.json();
+    printBtn?.addEventListener('click', () => window.print());
 
-      if (!resData.success) {
-        alert(resData.message || 'Hesaplama yapılırken bir hata oluştu.');
-        return;
-      }
-
-      const { data } = resData;
-      const fmt = (num) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
-
-      document.getElementById('resPrincipal').textContent = `${fmt(data.principal)} TL`;
-      document.getElementById('resPenalty').textContent = `${fmt(data.lateFee)} TL`;
-      document.getElementById('resTotalPayout').textContent = `${fmt(data.totalPayout)} TL`;
-      document.getElementById('resDuration').textContent = `${data.duration.months} Ay ${data.duration.days} Gün`;
-      document.getElementById('resTotalDays').textContent = `(Toplam ${data.duration.totalDays} Gün)`;
-      document.getElementById('resRate').textContent = `%${data.monthlyRate}`;
-
-      placeholder?.classList.add('hidden');
-      results?.classList.remove('hidden');
-
-    } catch (err) {
-      console.error(err);
-      alert('Sunucuyla iletişim kurulurken hata oluştu.');
+    const paymentDateInput = document.getElementById('paymentDate');
+    if (paymentDateInput && !paymentDateInput.value) {
+      paymentDateInput.valueAsDate = new Date();
     }
-  });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!errorBox || !btnText || !btnSpinner || !placeholder || !results) return;
+
+      errorBox.classList.add('hidden');
+      errorBox.textContent = '';
+
+      btnText.textContent = 'Hesaplanıyor...';
+      btnSpinner.classList.remove('hidden');
+      submitBtn.disabled = true;
+
+      try {
+        const amount = parseFloat(document.getElementById('amount').value);
+        const dueDate = document.getElementById('dueDate').value;
+        const paymentDate = document.getElementById('paymentDate').value;
+        const monthlyRate = parseFloat(document.getElementById('monthlyRate').value);
+
+        const response = await fetch(`${PUBLIC_API_URL}/tools/calculate-late-fee`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount, dueDate, paymentDate, monthlyRate })
+        });
+
+        const resData = await response.json();
+
+        if (!resData.success) {
+          throw new Error(resData.message || 'Hesaplama yapılırken bir hata oluştu.');
+        }
+
+        const { data } = resData;
+
+        document.getElementById('resPrincipal').textContent = formatTL(data.principal);
+        document.getElementById('resPenalty').textContent = formatTL(data.lateFee);
+        document.getElementById('resTotalPayout').textContent = formatTL(data.totalPayout);
+        document.getElementById('resDuration').textContent = `${data.duration.months} Ay ${data.duration.days} Gün`;
+        document.getElementById('resTotalDays').textContent = `Toplam ${data.duration.totalDays} Gün`;
+        document.getElementById('resRate').textContent = `%${data.monthlyRate}`;
+        
+        const rateBadge = document.getElementById('resRate-badge');
+        if (rateBadge) {
+          rateBadge.textContent = `Oran: %${data.monthlyRate}`;
+        }
+
+        placeholder.classList.add('hidden');
+        results.classList.remove('hidden');
+
+      } catch (err) {
+        console.error('Gecikme Zammı Hesaplama Hatası:', err);
+        if (errorBox) {
+          errorBox.textContent = err.message || 'Sunucuyla iletişim kurulurken hata oluştu.';
+          errorBox.classList.remove('hidden');
+        }
+      } finally {
+        if (btnText) btnText.textContent = 'Gecikme Zammı Hesapla';
+        if (btnSpinner) btnSpinner.classList.add('hidden');
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  };
+
+  document.addEventListener('astro:page-load', initLateFeeForm);
+  document.addEventListener('DOMContentLoaded', initLateFeeForm);
+  initLateFeeForm();
 </script>
