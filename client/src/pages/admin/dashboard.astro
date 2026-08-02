@@ -2,11 +2,9 @@
 // client/src/pages/admin/dashboard.astro
 export const prerender = false; // SSR modunda çalıştığını garanti eder
 
-// ⚠️ DİKKAT: Sunucu tarafındaki yönlendirme (SSR Guard) tamamen kaldırıldı. 
-// Bu sayede "bu hizmetlere erişin" döngüsü ve kilitlenmeler ortadan kalkar.
-
 // Global CSS / Tailwind dosyanızın yolunu doğrulayıp import edin
 import '../../styles/global.css';
+import { API_URL } from '../../lib/api';
 ---
 
 <html lang="tr">
@@ -117,46 +115,58 @@ import '../../styles/global.css';
       </div>
     </div>
 
-    <script>
+    <script define:vars={{ API_URL }}>
       import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '../../lib/api.js';
 
       let globalPosts = [];
 
-      // Güvenli çerez okuma fonksiyonu (Client-side)
-      function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener('DOMContentLoaded', async () => {
         const loader = document.getElementById('auth-guard-loader');
         const mainContent = document.getElementById('admin-main-content');
 
-        // 🔒 İstemci Tarafı Güvenlik Kontrolü
-        const token = getCookie('adminToken');
-        if (!token) {
+        // 🔒 GÜVENLİ DOĞRULAMA: HttpOnly çerezi tarayıcıdan okuyamayız,
+        // ancak sunucuya /auth/verify isteği atarak oturumumuzun geçerli olup olmadığını sorabiliriz.
+        try {
+          const verifyRes = await fetch(`${API_URL}/auth/verify`, {
+            method: 'GET',
+            credentials: 'include' // HttpOnly çerezi otomatik olarak istekte taşır
+          });
+
+          if (!verifyRes.ok) {
+            throw new Error('Oturum geçersiz');
+          }
+
+          // Oturum geçerli -> Perdeyi kaldır ve paneli göster
+          if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 300);
+          }
+          if (mainContent) {
+            mainContent.style.opacity = '1';
+          }
+
+          // Verileri yükle
+          loadPosts();
+
+        } catch (err) {
+          // Oturum yoksa veya geçersizse login sayfasına yönlendir
           window.location.href = '/admin/login';
           return;
-        }
-
-        // Token varsa perdeyi kaldır ve paneli göster
-        if (loader) {
-          loader.style.opacity = '0';
-          setTimeout(() => loader.remove(), 300);
-        }
-        if (mainContent) {
-          mainContent.style.opacity = '1';
         }
 
         // Çıkış Butonu
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
-          logoutBtn.addEventListener('click', () => {
-            document.cookie = 'adminToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-            if (typeof logoutUser === 'function') logoutUser();
-            window.location.href = '/admin/login';
+          logoutBtn.addEventListener('click', async () => {
+            try {
+              if (typeof logoutUser === 'function') {
+                await logoutUser();
+              }
+            } catch (e) {
+              // Sessizce yut
+            } finally {
+              window.location.href = '/admin/login';
+            }
           });
         }
 
@@ -374,8 +384,6 @@ import '../../styles/global.css';
             }
           });
         }
-
-        loadPosts();
       });
     </script>
   </body>

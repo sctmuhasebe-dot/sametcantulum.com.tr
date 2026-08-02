@@ -2,9 +2,6 @@
 // client/src/pages/admin/login.astro
 export const prerender = false;
 
-// 🛑 Sunucu ve istemci taraflı gereksiz otomatik yönlendirmeler kaldırıldı.
-// Kullanıcı doğrudan giriş formunu görecek ve giriş başarılı olduğunda dashboard'a yönlendirilecektir.
-
 import '../../styles/global.css';
 ---
 
@@ -81,14 +78,12 @@ import '../../styles/global.css';
             const password = passwordInput ? passwordInput.value : '';
 
             try {
-              const data = await loginUser(email, password);
+              // loginUser çağrısı yapılırken fetch içine credentials: 'include' 
+              // eklendiğinden emin olun (lib/api.js içindeki loginUser fonksiyonunda olmalıdır).
+              await loginUser(email, password);
               
-              // Token bilgisini güvenli çerez olarak set ediyoruz
-              if (data && data.token) {
-                const isSecure = window.location.protocol === 'https:';
-                document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax${isSecure ? '; Secure' : ''}`;
-              }
-
+              // 🟢 DÜZELTME: Token JS ile okunamaz, sunucu HttpOnly çerezi otomatik set etti.
+              // Doğrudan dashboard sayfasına yönlendiriyoruz.
               window.location.href = '/admin/dashboard';
             } catch (err) {
               if (errorMessage) {
