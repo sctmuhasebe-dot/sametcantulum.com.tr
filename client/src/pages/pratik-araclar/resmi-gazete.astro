@@ -1,55 +1,3 @@
----
-// ÖNEMLİ: Bu satır sayfanın Vercel'de statik olarak cache'lenmesini engeller ve her istekte dinamik çalışmasını sağlar.
-export const prerender = false;
-
-import Layout from '../../layouts/Layout.astro';
----
-
-<Layout title="Resmi Gazete & Mevzuat Takibi | Samet Can Tulum - SMMM">
-  <main class="max-w-5xl mx-auto px-4 py-10">
-    
-    <!-- Üst Başlık ve Tarih Seçici Kartı -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-red-950 text-white p-6 md:p-8 rounded-2xl shadow-xl border border-red-900 relative overflow-hidden">
-      
-      <!-- Arka plan dekoratif dokunuş -->
-      <div class="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-red-900/30 rounded-full blur-2xl pointer-events-none"></div>
-
-      <div class="relative z-10 space-y-2">
-        <a href="/pratik-araclar" class="text-xs font-bold text-red-300 hover:text-white inline-flex items-center gap-1 transition-colors">
-          ← Pratik Araçlara Dön
-        </a>
-        <div class="pt-1">
-          <span class="px-3 py-1 bg-red-900/60 text-red-200 font-bold text-xs uppercase tracking-wider rounded-lg border border-red-700/50 inline-flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-            resmigazete.gov.tr
-          </span>
-        </div>
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight pt-1">T.C. Resmi Gazete Takibi</h1>
-        <p class="text-red-200 text-sm">Günlük yayımlanan tebliğler, yönetmelikler ve kararları anlık inceleyin.</p>
-      </div>
-
-      <!-- Tarih Seçici -->
-      <div class="bg-red-900/80 p-3.5 rounded-xl border border-red-700/60 shrink-0 relative z-10">
-        <label class="block text-xs text-red-200 mb-1.5 font-semibold">Tarih Seçiniz:</label>
-        <input 
-          type="date" 
-          id="gazeteDate" 
-          class="bg-red-950 text-white border border-red-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400 transition-colors cursor-pointer"
-        />
-      </div>
-    </div>
-
-    <!-- Veri/İçerik Alanı -->
-    <div id="contentArea">
-      <div class="text-center py-16 text-slate-500 bg-white rounded-2xl border border-slate-100 shadow-sm">
-        <span class="inline-block animate-spin text-3xl mb-3">🌀</span>
-        <p class="font-medium text-slate-600">Resmi Gazete verileri getiriliyor...</p>
-      </div>
-    </div>
-
-  </main>
-</Layout>
-
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('gazeteDate');
@@ -72,13 +20,58 @@ import Layout from '../../layouts/Layout.astro';
       `;
 
       try {
-        const res = await fetch(`/api/resmi-gazete?date=${selectedDate}`);
-        const result = await res.json();
+        const formattedDate = selectedDate.replace(/-/g, '');
+        const year = formattedDate.substring(0, 4);
+        const month = formattedDate.substring(4, 6);
+        const day = formattedDate.substring(6, 8);
 
-        if (result.success && result.data && result.data.length > 0) {
+        const targetUrl = `https://www.resmigazete.gov.tr/eskiler/${year}/${month}/${formattedDate}.htm`;
+        
+        // Tarayıcıdan doğrudan güvenli CORS proxy ile çekiyoruz (Vercel engeline takılmaz)
+        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+
+        const res = await fetch(proxyUrl);
+        
+        if (!res.ok) {
+          throw new Error('Sayfa bulunamadı.');
+        }
+
+        const htmlText = await res.text();
+
+        // HTML içeriğini tarayıcı içinde parse ediyoruz
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, 'text/html');
+        const anchors = doc.querySelectorAll('a');
+        
+        const items = [];
+
+        anchors.forEach((element) => {
+          let title = element.textContent ? element.textContent.trim() : '';
+          let link = element.getAttribute('href');
+
+          title = title.replace(/\s+/g, ' ');
+
+          if (title && link && title.length > 15) {
+            if (!link.startsWith('http')) {
+              link = `https://www.resmigazete.gov.tr/eskiler/${year}/${month}/${link}`;
+            }
+
+            let category = "Mevzuat & Kararlar";
+            const lowerTitle = title.toLowerCase();
+            if (lowerTitle.includes('yönetmelik')) category = "Yönetmelikler";
+            else if (lowerTitle.includes('tebliğ')) category = "Tebliğler";
+            else if (lowerTitle.includes('ilân') || lowerTitle.includes('ilan')) category = "İlanlar";
+            else if (lowerTitle.includes('karar')) category = "Kararlar";
+
+            if (!items.some(item => item.title === title)) {
+              items.push({ category, title, link });
+            }
+          }
+        });
+
+        if (items.length > 0) {
           let html = `<div class="space-y-4">`;
-          
-          result.data.forEach((item) => {
+          items.forEach((item) => {
             html += `
               <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-4 group">
                 <div class="space-y-2">
@@ -101,14 +94,13 @@ import Layout from '../../layouts/Layout.astro';
               </div>
             `;
           });
-
           html += `</div>`;
           contentArea.innerHTML = html;
         } else {
           contentArea.innerHTML = `
             <div class="bg-amber-50/60 border border-amber-200/80 text-amber-900 p-8 rounded-2xl text-center space-y-2">
               <span class="text-3xl block mb-1">📅</span>
-              <p class="font-bold text-base">${result.message || 'Bu tarihe ait Resmi Gazete yayını bulunamadı.'}</p>
+              <p class="font-bold text-base">${selectedDate} tarihine ait Resmi Gazete yayını bulunamadı.</p>
               <p class="text-xs text-amber-700">Resmi tatillerde veya pazar günlerinde Resmi Gazete yayımlanmayabilir.</p>
             </div>
           `;
@@ -116,16 +108,16 @@ import Layout from '../../layouts/Layout.astro';
       } catch (err) {
         console.error("Fetch Hatası:", err);
         contentArea.innerHTML = `
-          <div class="bg-red-50 border border-red-200 text-red-700 p-8 rounded-2xl text-center space-y-2">
-            <span class="text-2xl block">⚠️</span>
-            <p class="font-bold">Veri sunucusuna ulaşılamadı.</p>
-            <p class="text-xs text-red-500">Lütfen internet bağlantınızı kontrol edip tekrar deneyin.</p>
+          <div class="bg-amber-50/60 border border-amber-200/80 text-amber-900 p-8 rounded-2xl text-center space-y-2">
+            <span class="text-3xl block mb-1">📅</span>
+            <p class="font-bold text-base">Bu tarihe ait Resmi Gazete yayını bulunamadı veya tatil günü.</p>
+            <p class="text-xs text-amber-700">Lütfen tarih seçicisinden Cuma veya geçmiş bir iş günü seçerek test edin.</p>
           </div>
         `;
       }
     }
 
-    // İlk yüklemede çalıştır (Varsayılan olarak Cuma gününü seçmek test için daha pratiktir çünkü bugün pazar)
+    // İlk yüklemede çalıştır (Not: Bugün Pazar olduğu için Cuma gününü test etmek amacıyla tarih seçebilirsiniz)
     fetchGazete(today);
 
     // Tarih değiştiğinde veriyi güncelle
