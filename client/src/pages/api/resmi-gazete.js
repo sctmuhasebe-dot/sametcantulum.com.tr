@@ -4,12 +4,12 @@ export const prerender = false;
 
 export async function GET({ request }) {
   const urlObj = new URL(request.url);
-  const dateStr = urlObj.searchParams.get('date'); // Örn: 2026-08-02
+  const dateStr = urlObj.searchParams.get('date');
 
   if (!dateStr) {
     return new Response(JSON.stringify({ success: false, message: 'Tarih parametresi gerekli.' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', 'charset': 'utf-8' }
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 
@@ -23,8 +23,7 @@ export async function GET({ request }) {
 
     const response = await fetch(targetUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'tr-TR,tr;q=0.9'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
     });
 
@@ -34,34 +33,25 @@ export async function GET({ request }) {
         message: `${dateStr} tarihine ait Resmi Gazete yayını bulunamadı.` 
       }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', 'charset': 'utf-8' }
+        headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // Türkçe karakterlerin bozulmaması için buffer'ı windows-1254 formatında decode ediyoruz
-    const buffer = await response.arrayBuffer();
-    const decoder = new TextDecoder('windows-1254');
-    const htmlText = decoder.decode(buffer);
-
+    const htmlText = await response.text();
     const $ = load(htmlText);
     const items = [];
 
-    // Resmi Gazete HTML yapısındaki başlıkları ve bağlantıları tarıyoruz
     $('a').each((_, element) => {
       let title = $(element).text().trim();
       let link = $(element).attr('href');
 
-      // Fazla boşlukları temizle
       title = title.replace(/\s+/g, ' ');
 
-      // Sadece anlamlı ve ilgili metin içeren bağlantıları alalım
       if (title && link && title.length > 15) {
-        // Göreceli (relative) linkleri tam URL'ye çevir
         if (!link.startsWith('http')) {
           link = `https://www.resmigazete.gov.tr/eskiler/${year}/${month}/${link}`;
         }
 
-        // Kategori tespiti
         let category = "Mevzuat & Kararlar";
         const lowerTitle = title.toLowerCase();
         if (lowerTitle.includes('yönetmelik')) category = "Yönetmelikler";
@@ -69,7 +59,6 @@ export async function GET({ request }) {
         else if (lowerTitle.includes('ilân') || lowerTitle.includes('ilan')) category = "İlanlar";
         else if (lowerTitle.includes('karar')) category = "Kararlar";
 
-        // Aynı başlıktan mükerrer kayıt olmasını önle
         if (!items.some(item => item.title === title)) {
           items.push({
             category,
@@ -85,17 +74,19 @@ export async function GET({ request }) {
       data: items.length > 0 ? items : [{ category: "Resmi Gazete", title: `${dateStr} Tarihli Resmi Gazete Sayısı`, link: targetUrl }]
     }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json', 'charset': 'utf-8' }
+      headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
-    console.error('API Parse Hatası:', error);
+    // Vercel Fonksiyon Loglarında hatanın detayını görmek için
+    console.error('RESMI GAZETE API HATASI:', error);
+    
     return new Response(JSON.stringify({ 
       success: false, 
-      message: 'Veriler işlenirken sunucu tarafında bir hata oluştu.' 
+      message: `Sunucu hatası: ${error.message}` 
     }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', 'charset': 'utf-8' }
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 }
