@@ -1,0 +1,88 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"src": "^/_server-islands/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/_image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/acik-riza-metni/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/dashboard/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/login/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/cerez-politikasi/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/iletisim/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/kvkk-aydinlatma-metni/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pratik-araclar/gecikme-zammi/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pratik-araclar/kidem-ihbar-tazminati/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pratik-araclar/net-brut-maas/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pratik-araclar/resmi-gazete/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/yayinlar/kategori/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/yayinlar/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/yayinlar/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/404/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/.*$",
+			"dest": "_render",
+			"status": 404
+		}
+	]
+}

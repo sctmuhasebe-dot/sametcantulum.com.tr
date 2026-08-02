@@ -1,0 +1,104 @@
+import { n as __exportAll, t as createComponent } from "./compiler_BZ5cquMV.mjs";
+import { _ as defineScriptVars, i as renderComponent, m as maybeRenderHead, u as renderTemplate } from "./server_BzieqcK4.mjs";
+import { t as $$Layout } from "./Layout_DKYPyp_h.mjs";
+//#region src/pages/pratik-araclar/resmi-gazete.astro
+var resmi_gazete_exports = /* @__PURE__ */ __exportAll({
+	default: () => $$ResmiGazete,
+	file: () => $$file,
+	url: () => $$url
+});
+var $$ResmiGazete = createComponent(($$result, $$props, $$slots) => {
+	return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Resmi Gazete & Mevzuat Takibi | Samet Can Tulum - SMMM" }, { "default": ($$result2) => renderTemplate`${maybeRenderHead($$result2)}<main class="max-w-5xl mx-auto px-4 py-10"><!-- Üst Başlık ve Tarih Seçici Kartı (Resmi Gazete Kırmızısı ile Güncellendi) --><div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-red-950 text-white p-6 md:p-8 rounded-2xl shadow-xl border border-red-900 relative overflow-hidden"><!-- Arka plan dekoratif dokunuş --><div class="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-red-900/30 rounded-full blur-2xl pointer-events-none"></div><div class="relative z-10 space-y-2"><a href="/pratik-araclar" class="text-xs font-bold text-red-300 hover:text-white inline-flex items-center gap-1 transition-colors">← Pratik Araçlara Dön</a><div class="pt-1"><span class="px-3 py-1 bg-red-900/60 text-red-200 font-bold text-xs uppercase tracking-wider rounded-lg border border-red-700/50 inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>resmigazete.gov.tr</span></div><h1 class="text-2xl md:text-3xl font-extrabold tracking-tight pt-1">T.C. Resmi Gazete Takibi</h1><p class="text-red-200 text-sm">Günlük yayımlanan tebliğler, yönetmelikler ve kararları anlık inceleyin.</p></div><!-- Tarih Seçici --><div class="bg-red-900/80 p-3.5 rounded-xl border border-red-700/60 shrink-0 relative z-10"><label class="block text-xs text-red-200 mb-1.5 font-semibold">Tarih Seçiniz:</label><input type="date" id="gazeteDate" class="bg-red-950 text-white border border-red-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400 transition-colors cursor-pointer"></div></div><!-- Veri/İçerik Alanı --><div id="contentArea"><div class="text-center py-16 text-slate-500 bg-white rounded-2xl border border-slate-100 shadow-sm"><span class="inline-block animate-spin text-3xl mb-3">🌀</span><p class="font-medium text-slate-600">Resmi Gazete verileri getiriliyor...</p></div></div></main>` })}<script>(function(){${defineScriptVars({ PUBLIC_API_URL: "http://localhost:5000/api" })}
+  document.addEventListener('DOMContentLoaded', () => {
+    const dateInput = document.getElementById('gazeteDate');
+    const contentArea = document.getElementById('contentArea');
+
+    // Bugünün tarihini varsayılan yap (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    if (dateInput) {
+      dateInput.value = today;
+    }
+
+    async function fetchGazete(selectedDate) {
+      if (!contentArea) return;
+      
+      contentArea.innerHTML = \`
+        <div class="text-center py-16 text-slate-500 bg-white rounded-2xl border border-slate-100 shadow-sm">
+          <span class="inline-block animate-spin text-3xl mb-3">🌀</span>
+          <p class="font-medium text-slate-600">Seçilen tarih için Resmi Gazete çekiliyor...</p>
+        </div>
+      \`;
+
+      try {
+        const res = await fetch(\`\${PUBLIC_API_URL}/resmi-gazete?date=\${selectedDate}\`);
+        const result = await res.json();
+
+        if (result.success && result.data && result.data.length > 0) {
+          let html = \`<div class="space-y-4">\`;
+          
+          result.data.forEach((item) => {
+            html += \`
+              <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-4 group">
+                <div class="space-y-2">
+                  <span class="inline-block px-3 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-lg border border-red-100">
+                    \${item.category}
+                  </span>
+                  <h3 class="font-bold text-slate-900 text-base md:text-lg leading-snug group-hover:text-red-700 transition-colors">
+                    \${item.title}
+                  </h3>
+                </div>
+                <a 
+                  href="\${item.link}" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="shrink-0 inline-flex items-center justify-center px-4 py-2.5 bg-red-900 hover:bg-red-800 text-white font-semibold text-xs rounded-xl transition-all shadow-sm gap-1.5"
+                >
+                  <span>Orijinal Metni Oku</span>
+                  <span>↗</span>
+                </a>
+              </div>
+            \`;
+          });
+
+          html += \`</div>\`;
+          contentArea.innerHTML = html;
+        } else {
+          contentArea.innerHTML = \`
+            <div class="bg-amber-50/60 border border-amber-200/80 text-amber-900 p-8 rounded-2xl text-center space-y-2">
+              <span class="text-3xl block mb-1">📅</span>
+              <p class="font-bold text-base">\${result.message || 'Bu tarihe ait Resmi Gazete yayını bulunamadı.'}</p>
+              <p class="text-xs text-amber-700">Resmi tatillerde veya pazar günlerinde Resmi Gazete yayımlanmayabilir.</p>
+            </div>
+          \`;
+        }
+      } catch (err) {
+        console.error("Fetch Hatası:", err);
+        contentArea.innerHTML = \`
+          <div class="bg-red-50 border border-red-200 text-red-700 p-8 rounded-2xl text-center space-y-2">
+            <span class="text-2xl block">⚠️</span>
+            <p class="font-bold">Veri sunucusuna ulaşılamadı.</p>
+            <p class="text-xs text-red-500">Lütfen backend servisinizin (localhost:5000) çalıştığından emin olun.</p>
+          </div>
+        \`;
+      }
+    }
+
+    // İlk yüklemede çalıştır
+    fetchGazete(today);
+
+    // Tarih değiştiğinde veriyi güncelle
+    if (dateInput) {
+      dateInput.addEventListener('change', (e) => {
+        fetchGazete(e.target.value);
+      });
+    }
+  });
+})();<\/script>`;
+}, "C:/Users/samet/OneDrive/Masaüstü/sametcantulum.com.tr/client/src/pages/pratik-araclar/resmi-gazete.astro", void 0);
+var $$file = "C:/Users/samet/OneDrive/Masaüstü/sametcantulum.com.tr/client/src/pages/pratik-araclar/resmi-gazete.astro";
+var $$url = "/pratik-araclar/resmi-gazete";
+//#endregion
+//#region \0virtual:astro:page:src/pages/pratik-araclar/resmi-gazete@_@astro
+var page = () => resmi_gazete_exports;
+//#endregion
+export { page };
