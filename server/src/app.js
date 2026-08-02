@@ -16,20 +16,26 @@ app.use(helmet());
 
 // İzin verilecek kök adreslerin listesi (CORS güvenliği)
 const allowedOrigins = [
-  'http://localhost:4321',        // Astro local geliştirme ortamı
-  'http://localhost:3000',        // Alternatif local port
+  'http://localhost:4321',         // Astro local geliştirme ortamı
+  'http://localhost:3000',         // Alternatif local port
   'https://sametcantulum.com.tr',  // Canlı site adresi
-  process.env.ALLOWED_ORIGIN      // .env dosyasında tanımlı özel adres
+  'https://www.sametcantulum.com.tr', // Canlı site www sürümü
+  process.env.ALLOWED_ORIGIN       // .env dosyasında tanımlı özel adres
 ].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Postman, curl veya sunucu içi isteklerde origin boş (undefined) gelebilir
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS politikası bu origin için izin vermiyor.'));
+    // Postman, curl, mobil uygulamalar veya sunucu içi isteklerde origin boş (undefined) gelebilir
+    if (!origin) {
+      return callback(null, true);
     }
+    
+    // Eğer gelen istek izin verilen listedeyse VEYA Vercel preview domain uzantılıysa izin ver
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    return callback(new Error('CORS politikası bu origin için izin vermiyor.'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, // ⚠️ HttpOnly çerezlerin (adminToken) güvenle taşınması için zorunludur
