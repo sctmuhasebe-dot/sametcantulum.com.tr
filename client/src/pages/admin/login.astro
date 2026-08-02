@@ -1,15 +1,11 @@
 ---
 // client/src/pages/admin/login.astro
-export const prerender = false; // SSR modunda çalıştığını garanti eder
+export const prerender = false;
 
-// Zaten oturum açılmışsa doğrudan dashboard'a yönlendir (Sunucu Tarafı Kontrolü)
-const token = Astro.cookies.get('adminToken')?.value;
-if (token) {
-  return Astro.redirect('/admin/dashboard');
-}
+// 🛑 Sunucu ve istemci taraflı gereksiz otomatik yönlendirmeler kaldırıldı.
+// Kullanıcı doğrudan giriş formunu görecek ve giriş başarılı olduğunda dashboard'a yönlendirilecektir.
 
-// Global CSS / Tailwind dosyanızın yolunu doğrulayıp import edin
-import '../../styles/global.css'; 
+import '../../styles/global.css';
 ---
 
 <html lang="tr">
@@ -62,19 +58,9 @@ import '../../styles/global.css';
     </div>
 
     <script>
-      import { loginUser, isAuthenticated } from '../../lib/api.js';
+      import { loginUser } from '../../lib/api.js';
 
       document.addEventListener('DOMContentLoaded', () => {
-        // Güvenli client-side kontrolü (Sonsuz döngü koruması)
-        try {
-          if (typeof isAuthenticated === 'function' && isAuthenticated()) {
-            window.location.href = '/admin/dashboard';
-            return;
-          }
-        } catch (e) {
-          console.error("Auth check error:", e);
-        }
-
         const form = document.getElementById('loginForm');
         const errorMessage = document.getElementById('errorMessage');
         const submitBtn = document.getElementById('submitBtn');
@@ -97,7 +83,7 @@ import '../../styles/global.css';
             try {
               const data = await loginUser(email, password);
               
-              // Backend'den gelen token bilgisini güvenli çerez olarak set ediyoruz (HTTPS uyumlu)
+              // Token bilgisini güvenli çerez olarak set ediyoruz
               if (data && data.token) {
                 const isSecure = window.location.protocol === 'https:';
                 document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax${isSecure ? '; Secure' : ''}`;
