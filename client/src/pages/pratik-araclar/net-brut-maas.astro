@@ -217,7 +217,7 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val || 0);
   };
 
-  const initPayrollForm = () => {
+  function initPayrollForm() {
     const form = document.getElementById('payroll-form');
     if (!form || form.dataset.initialized === 'true') return;
     form.dataset.initialized = 'true';
@@ -235,7 +235,9 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
     const tableBody = document.getElementById('monthly-table-body');
     const tableFoot = document.getElementById('monthly-table-foot');
 
-    printBtn?.addEventListener('click', () => window.print());
+    if (printBtn) {
+      printBtn.addEventListener('click', () => window.print());
+    }
 
     const radios = form.querySelectorAll('.type-radio');
     radios.forEach(radio => {
@@ -249,18 +251,27 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      errorBox.classList.add('hidden');
-      btnText.textContent = 'Hesaplanıyor...';
-      btnSpinner.classList.remove('hidden');
-      submitBtn.disabled = true;
+      if (errorBox) {
+        errorBox.classList.add('hidden');
+        errorBox.textContent = '';
+      }
+      
+      if (btnText) btnText.textContent = 'Hesaplanıyor...';
+      if (btnSpinner) btnSpinner.classList.remove('hidden');
+      if (submitBtn) submitBtn.disabled = true;
 
       const formData = new FormData(form);
       const selectedType = formData.get('type') || 'brutToNet';
       const amountVal = Number(formData.get('amount'));
       const sgkIndirimVal = Number(formData.get('sgkIndirim') || 5);
 
+      // Mobilde localhost çöküşlerini önlemek için akıllı fallback adresi
+      const targetApiUrl = (PUBLIC_API_URL && PUBLIC_API_URL !== 'undefined') 
+        ? PUBLIC_API_URL 
+        : 'https://api.sametcantulum.com.tr/api';
+
       try {
-        const response = await fetch(`${PUBLIC_API_URL}/tools/calculate-payroll`, {
+        const response = await fetch(`${targetApiUrl}/tools/calculate-payroll`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -282,11 +293,14 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
         const totals = data.annualTotals;
 
         const avgNetVal = totals.totalNet / 12;
-        document.getElementById('avg-net').textContent = formatTL(avgNetVal);
-        document.getElementById('total-net').textContent = formatTL(totals.totalNet);
+        const avgNetEl = document.getElementById('avg-net');
+        const totalNetEl = document.getElementById('total-net');
+        if (avgNetEl) avgNetEl.textContent = formatTL(avgNetVal);
+        if (totalNetEl) totalNetEl.textContent = formatTL(totals.totalNet);
         
         const workerDeductions = (totals.totalSgk || 0) + (totals.totalTax || 0);
-        document.getElementById('total-worker-deductions').textContent = formatTL(workerDeductions);
+        const totalWorkerDeductionsEl = document.getElementById('total-worker-deductions');
+        if (totalWorkerDeductionsEl) totalWorkerDeductionsEl.textContent = formatTL(workerDeductions);
 
         const monthlyBrut = details[0].brut;
         const sgkTavan2026 = 297270.00;
@@ -302,63 +316,74 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
         if (rateLabel) rateLabel.textContent = sgkIndirimVal === 5 ? '%5 İndirimli' : 'Standart Oran';
         if (rateTitle) rateTitle.textContent = `SGK İşveren Primi (%${(employerSgkRate * 100).toFixed(1)}):`;
 
-        document.getElementById('monthly-employer-cost').textContent = formatTL(totalEmployerMonthly);
-        document.getElementById('cost-brut').textContent = formatTL(monthlyBrut);
-        document.getElementById('cost-sgk-employer').textContent = formatTL(monthlySgkEmployer);
-        document.getElementById('cost-issizlik-employer').textContent = formatTL(monthlyIssizlikEmployer);
+        const monthlyEmployerCostEl = document.getElementById('monthly-employer-cost');
+        const costBrutEl = document.getElementById('cost-brut');
+        const costSgkEmployerEl = document.getElementById('cost-sgk-employer');
+        const costIssizlikEmployerEl = document.getElementById('cost-issizlik-employer');
 
-        summaryPlaceholder.classList.add('hidden');
-        summaryCards.classList.remove('hidden');
+        if (monthlyEmployerCostEl) monthlyEmployerCostEl.textContent = formatTL(totalEmployerMonthly);
+        if (costBrutEl) costBrutEl.textContent = formatTL(monthlyBrut);
+        if (costSgkEmployerEl) costSgkEmployerEl.textContent = formatTL(monthlySgkEmployer);
+        if (costIssizlikEmployerEl) costIssizlikEmployerEl.textContent = formatTL(monthlyIssizlikEmployer);
 
-        tableBody.innerHTML = details.map((m) => `
-          <tr class="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
-            <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">${m.month}</td>
-            <td class="py-2.5 px-3 text-right">${formatTL(m.brut)}</td>
-            <td class="py-2.5 px-3 text-right text-amber-600 dark:text-amber-400/80">${formatTL(m.sgkIsci)}</td>
-            <td class="py-2.5 px-3 text-right text-amber-600 dark:text-amber-400/80">${formatTL(m.issizlikIsci)}</td>
-            <td class="py-2.5 px-3 text-right text-slate-500 dark:text-slate-400">${formatTL(m.gvMatrah)}</td>
-            <td class="py-2.5 px-3 text-right text-slate-500 dark:text-slate-400">${formatTL(m.cumulativeGvMatrah)}</td>
-            <td class="py-2.5 px-3 text-right">${formatTL(m.calculatedGv)}</td>
-            <td class="py-2.5 px-3 text-right text-emerald-600 dark:text-emerald-400">-${formatTL(m.asgariGvIstisnasi)}</td>
-            <td class="py-2.5 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(m.finalGv)}</td>
-            <td class="py-2.5 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(m.finalDamga)}</td>
-            <td class="py-2.5 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">${formatTL(m.net)}</td>
-          </tr>
-        `).join('');
+        if (summaryPlaceholder) summaryPlaceholder.classList.add('hidden');
+        if (summaryCards) summaryCards.classList.remove('hidden');
 
-        tableFoot.innerHTML = `
-          <tr class="bg-slate-100 dark:bg-slate-950">
-            <td class="py-3 px-3 uppercase">TOPLAM</td>
-            <td class="py-3 px-3 text-right">${formatTL(totals.totalBrut)}</td>
-            <td class="py-3 px-3 text-right text-amber-600 dark:text-amber-400">${formatTL(details.reduce((a, b) => a + b.sgkIsci, 0))}</td>
-            <td class="py-3 px-3 text-right text-amber-600 dark:text-amber-400">${formatTL(details.reduce((a, b) => a + b.issizlikIsci, 0))}</td>
-            <td class="py-3 px-3 text-right">-</td>
-            <td class="py-3 px-3 text-right">-</td>
-            <td class="py-3 px-3 text-right">${formatTL(details.reduce((a, b) => a + b.calculatedGv, 0))}</td>
-            <td class="py-3 px-3 text-right text-emerald-600 dark:text-emerald-400">-${formatTL(details.reduce((a, b) => a + b.asgariGvIstisnasi, 0))}</td>
-            <td class="py-3 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(details.reduce((a, b) => a + b.finalGv, 0))}</td>
-            <td class="py-3 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(details.reduce((a, b) => a + b.finalDamga, 0))}</td>
-            <td class="py-3 px-3 text-right font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/20">${formatTL(totals.totalNet)}</td>
-          </tr>
-        `;
+        if (tableBody) {
+          tableBody.innerHTML = details.map((m) => `
+            <tr class="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">${m.month}</td>
+              <td class="py-2.5 px-3 text-right">${formatTL(m.brut)}</td>
+              <td class="py-2.5 px-3 text-right text-amber-600 dark:text-amber-400/80">${formatTL(m.sgkIsci)}</td>
+              <td class="py-2.5 px-3 text-right text-amber-600 dark:text-amber-400/80">${formatTL(m.issizlikIsci)}</td>
+              <td class="py-2.5 px-3 text-right text-slate-500 dark:text-slate-400">${formatTL(m.gvMatrah)}</td>
+              <td class="py-2.5 px-3 text-right text-slate-500 dark:text-slate-400">${formatTL(m.cumulativeGvMatrah)}</td>
+              <td class="py-2.5 px-3 text-right">${formatTL(m.calculatedGv)}</td>
+              <td class="py-2.5 px-3 text-right text-emerald-600 dark:text-emerald-400">-${formatTL(m.asgariGvIstisnasi)}</td>
+              <td class="py-2.5 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(m.finalGv)}</td>
+              <td class="py-2.5 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(m.finalDamga)}</td>
+              <td class="py-2.5 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">${formatTL(m.net)}</td>
+            </tr>
+          `).join('');
+        }
 
-        tableWrapper.classList.remove('hidden');
+        if (tableFoot) {
+          tableFoot.innerHTML = `
+            <tr class="bg-slate-100 dark:bg-slate-950">
+              <td class="py-3 px-3 uppercase">TOPLAM</td>
+              <td class="py-3 px-3 text-right">${formatTL(totals.totalBrut)}</td>
+              <td class="py-3 px-3 text-right text-amber-600 dark:text-amber-400">${formatTL(details.reduce((a, b) => a + b.sgkIsci, 0))}</td>
+              <td class="py-3 px-3 text-right text-amber-600 dark:text-amber-400">${formatTL(details.reduce((a, b) => a + b.issizlikIsci, 0))}</td>
+              <td class="py-3 px-3 text-right">-</td>
+              <td class="py-3 px-3 text-right">-</td>
+              <td class="py-3 px-3 text-right">${formatTL(details.reduce((a, b) => a + b.calculatedGv, 0))}</td>
+              <td class="py-3 px-3 text-right text-emerald-600 dark:text-emerald-400">-${formatTL(details.reduce((a, b) => a + b.asgariGvIstisnasi, 0))}</td>
+              <td class="py-3 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(details.reduce((a, b) => a + b.finalGv, 0))}</td>
+              <td class="py-3 px-3 text-right text-rose-600 dark:text-rose-400">${formatTL(details.reduce((a, b) => a + b.finalDamga, 0))}</td>
+              <td class="py-3 px-3 text-right font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/20">${formatTL(totals.totalNet)}</td>
+            </tr>
+          `;
+        }
+
+        if (tableWrapper) tableWrapper.classList.remove('hidden');
 
       } catch (err) {
-        errorBox.textContent = err.message || 'Beklenmeyen bir hata oluştu.';
-        errorBox.classList.remove('hidden');
+        if (errorBox) {
+          errorBox.textContent = err.message || 'Beklenmeyen bir hata oluştu.';
+          errorBox.classList.remove('hidden');
+        }
       } finally {
-        btnText.textContent = 'Hesapla ve Cetveli Getir';
-        btnSpinner.classList.add('hidden');
-        submitBtn.disabled = false;
+        if (btnText) btnText.textContent = 'Hesapla ve Cetveli Getir';
+        if (btnSpinner) btnSpinner.classList.add('hidden');
+        if (submitBtn) submitBtn.disabled = false;
       }
     });
-  };
+  }
 
-  document.addEventListener('astro:page-load', initPayrollForm);
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPayrollForm);
   } else {
     initPayrollForm();
   }
+  document.addEventListener('astro:page-load', initPayrollForm);
 </script>
