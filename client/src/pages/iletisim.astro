@@ -3,7 +3,7 @@
 export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
-import { API_URL } from '../lib/api'; // Eğer başka sayfalar için kullanılıyorsa kalsın
+import { API_URL } from '../lib/api';
 
 // Varsayılan İletişim Bilgileri (Fallback)
 let siteSettings = {
@@ -196,10 +196,8 @@ try {
 
   </main>
 
-  <!-- Tam Sütunlu Kararlı Supabase Script -->
+  <!-- Güvenli API / Nodemailer Entegrasyonlu Kararlı Script -->
   <script>
-    import { supabase } from '../lib/supabase';
-
     const form = document.getElementById('contact-form') as HTMLFormElement;
     const submitBtn = document.getElementById('cf-submit') as HTMLButtonElement;
     const feedback = document.getElementById('cf-feedback');
@@ -239,41 +237,41 @@ try {
       const subject = formData.get('subject') as string;
       const message = formData.get('message') as string;
 
-      const now = new Date().toISOString();
-
       submitBtn.disabled = true;
       submitBtn.textContent = 'Gönderiliyor...';
       feedback.classList.add('hidden');
 
       try {
-        // Supabase messages tablosuna tüm alanlar ve yasal onaylarla kayıt atma
-        const { error } = await supabase
-          .from('messages')
-          .insert([
-            { 
-              name, 
-              email, 
-              phone, 
-              subject, 
-              message, 
-              kvkk_onay: true,
-              kvkk_onay_at: now,
-              akis_onay: true,
-              akis_onay_at: now,
-              taahhutname_onay: true,
-              taahhutname_onay_at: now,
-              created_at: now 
-            }
-          ]);
+        // Güvenli Vercel / Astro API Rotamıza İstek Atıyoruz
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            phone,
+            subject,
+            message,
+            kvkk_onay: true,
+            akis_onay: true,
+            taahhutname_onay: true,
+          }),
+        });
 
-        if (error) throw error;
+        const result = await response.json();
 
-        feedback.textContent = 'Mesajınız başarıyla gönderildi. Teşekkür ederiz!';
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Mesaj gönderilemedi.');
+        }
+
+        feedback.textContent = 'Mesajınız başarıyla gönderildi ve tarafınıza iletildi. Teşekkür ederiz!';
         feedback.className = 'text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3';
         form.reset();
       } catch (err: any) {
-        console.error('Supabase Hata Detayı:', err.message || err);
-        feedback.textContent = 'Mesaj gönderilemedi, lütfen tekrar deneyin.';
+        console.error('Form Gönderim Hatası:', err);
+        feedback.textContent = `Hata: ${err.message || 'Mesaj gönderilemedi, lütfen tekrar deneyin.'}`;
         feedback.className = 'text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3';
       } finally {
         submitBtn.disabled = false;
