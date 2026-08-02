@@ -1,10 +1,11 @@
 import express from 'express';
 import { calculateBrutToNet, calculateNetToBrut } from '../services/payrollService.js';
+import { lateFeeSchema } from '../schemas/toolSchemas.js';
 
 const router = express.Router();
 
 // --------------------------------------------------------------------------
-// 1. POST /api/tools/calculate-payroll (Maaş: Brüt-Net / Net-Brüt)
+// 1. POST /calculate-payroll (Maaş: Brüt-Net / Net-Brüt)
 // --------------------------------------------------------------------------
 router.post('/calculate-payroll', (req, res) => {
   try {
@@ -18,12 +19,10 @@ router.post('/calculate-payroll', (req, res) => {
       });
     }
 
-    // Gelen 'type' değerine göre ilgili servisi çalıştırıyoruz
     const monthlyDetails = type === 'netToBrut'
       ? calculateNetToBrut(numericAmount, Number(year))
       : calculateBrutToNet(numericAmount, Number(year));
 
-    // Yıllık Toplamlar
     const totalBrut = monthlyDetails.reduce((sum, item) => sum + item.brut, 0);
     const totalNet = monthlyDetails.reduce((sum, item) => sum + item.net, 0);
     const totalSgk = monthlyDetails.reduce((sum, item) => sum + (item.sgkIsci || 0) + (item.issizlikIsci || 0), 0);
@@ -54,7 +53,7 @@ router.post('/calculate-payroll', (req, res) => {
 });
 
 // --------------------------------------------------------------------------
-// 2. POST /api/tools/calculate-severance (Kıdem ve İhbar Tazminatı)
+// 2. POST /calculate-severance (Kıdem ve İhbar Tazminatı)
 // --------------------------------------------------------------------------
 router.post('/calculate-severance', (req, res) => {
   try {
@@ -79,7 +78,6 @@ router.post('/calculate-severance', (req, res) => {
       });
     }
 
-    // Yıl, Ay, Gün Hesaplama
     let years = end.getFullYear() - start.getFullYear();
     let months = end.getMonth() - start.getMonth();
     let days = end.getDate() - start.getDate();
@@ -97,10 +95,8 @@ router.post('/calculate-severance', (req, res) => {
     const totalDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     const totalYearsExact = totalDays / 365.25;
 
-    // 1475 Sayılı İş Kanunu Md. 14 uyarınca 1 yıldan az çalışan kıdem tazminatına hak kazanamaz
     const isEligibleForSeverance = totalYearsExact >= 1;
 
-    // Kıdem Tazminatı Tavanı ve Giydirilmiş Brüt Kontrolü
     const KIDEM_TAVANI_2026 = 46398.00; 
     const rawGiydirilmisBrut = numGrossSalary + numBenefits;
 
@@ -111,7 +107,6 @@ router.post('/calculate-severance', (req, res) => {
       tavanApplied = true;
     }
 
-    // Kıdem Tazminatı Hesabı (Gelir vergisinden müstesna, binde 7.59 damga vergisi)
     let severanceGross = 0;
     let severanceStampTax = 0;
     let severanceNet = 0;
@@ -122,12 +117,11 @@ router.post('/calculate-severance', (req, res) => {
       severanceNet = severanceGross - severanceStampTax;
     }
 
-    // İhbar Tazminatı Hesabı (4857 Sayılı Kanun Md. 17)
     let noticeWeeks = 0;
-    if (totalDays < 180) noticeWeeks = 2;          // 6 aydan az: 2 Hafta
-    else if (totalDays < 540) noticeWeeks = 4;     // 6 ay - 1.5 yıl: 4 Hafta
-    else if (totalDays < 1080) noticeWeeks = 6;    // 1.5 yıl - 3 yıl: 6 Hafta
-    else noticeWeeks = 8;                          // 3 yıldan fazla: 8 Hafta
+    if (totalDays < 180) noticeWeeks = 2;         
+    else if (totalDays < 540) noticeWeeks = 4;    
+    else if (totalDays < 1080) noticeWeeks = 6;   
+    else noticeWeeks = 8;                         
 
     let noticeGross = 0;
     let noticeIncomeTax = 0;
@@ -137,7 +131,7 @@ router.post('/calculate-severance', (req, res) => {
     if (includeNotice) {
       const dailyGross = rawGiydirilmisBrut / 30;
       noticeGross = dailyGross * (noticeWeeks * 7);
-      noticeIncomeTax = noticeGross * 0.15; // Standart %15 vergi dilimi varsayımı
+      noticeIncomeTax = noticeGross * 0.15; 
       noticeStampTax = noticeGross * 0.00759;
       noticeNet = noticeGross - (noticeIncomeTax + noticeStampTax);
     }
@@ -175,20 +169,28 @@ router.post('/calculate-severance', (req, res) => {
 });
 
 // --------------------------------------------------------------------------
-// 3. POST /api/tools/calculate-late-fee (Gecikme Zammı ve Faizi)
+// 3. POST /calculate-late-fee (Zod Entegreli Gecikme Zammı)
 // --------------------------------------------------------------------------
 router.post('/calculate-late-fee', (req, res) => {
   try {
-    const { amount, dueDate, paymentDate, monthlyRate = 4.50 } = req.body;
-    const numAmount = Number(amount);
-    const numRate = Number(monthlyRate);
+    // 1. Zod Süzgeci ile Gelen Veriyi Doğrula
+    const validationResult = lateFeeSchema.safeParse({
+      amount: Number(req.body.amount),
+      dueDate: req.body.dueDate,
+      paymentDate: req.body.paymentDate,
+      monthlyRate: req.body.monthlyRate ? Number(req.body.monthlyRate) : 4.50
+    });
 
-    if (!numAmount || numAmount <= 0 || !dueDate || !paymentDate) {
+    if (!validationResult.success) {
       return res.status(400).json({
         success: false,
-        message: 'Lütfen tutar ve tarih bilgilerini eksiksiz giriniz.'
+        message: 'Geçersiz veri girişi.',
+        errors: validationResult.error.errors.map(err => err.message)
       });
     }
+
+    // 2. Doğrulanmış Güvenli Verileri Al
+    const { amount, dueDate, paymentDate, monthlyRate = 4.50 } = validationResult.data;
 
     const start = new Date(dueDate);
     const end = new Date(paymentDate);
@@ -200,7 +202,6 @@ router.post('/calculate-late-fee', (req, res) => {
       });
     }
 
-    // Gün ve Ay Hesaplama
     let years = end.getFullYear() - start.getFullYear();
     let months = end.getMonth() - start.getMonth();
     let days = end.getDate() - start.getDate();
@@ -218,23 +219,20 @@ router.post('/calculate-late-fee', (req, res) => {
     const totalMonths = (years * 12) + months;
     const totalDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 
-    // AATUHK Md. 51 Uygun Hesaplama Mantığı:
-    // - Tam aylar için belirlenen aylık oran (%)
-    // - Ay kesirleri (kalan gün) için günlük oran = (Aylık Oran / 30)
-    const rateDecimal = numRate / 100;
+    const rateDecimal = monthlyRate / 100;
     const dailyRateDecimal = rateDecimal / 30;
 
-    const fullMonthsFee = numAmount * (totalMonths * rateDecimal);
-    const fractionDaysFee = numAmount * (days * dailyRateDecimal);
+    const fullMonthsFee = amount * (totalMonths * rateDecimal);
+    const fractionDaysFee = amount * (days * dailyRateDecimal);
 
     const totalLateFee = fullMonthsFee + fractionDaysFee;
-    const totalPayout = numAmount + totalLateFee;
+    const totalPayout = amount + totalLateFee;
 
     return res.json({
       success: true,
       data: {
-        principal: Number(numAmount.toFixed(2)),
-        monthlyRate: numRate,
+        principal: Number(amount.toFixed(2)),
+        monthlyRate,
         duration: {
           months: totalMonths,
           days,
