@@ -65,10 +65,14 @@ import '../../styles/global.css';
       import { loginUser, isAuthenticated } from '../../lib/api.js';
 
       document.addEventListener('DOMContentLoaded', () => {
-        // Client tarafı ek güvenlik kontrolü
-        if (isAuthenticated && isAuthenticated()) {
-          window.location.href = '/admin/dashboard';
-          return;
+        // Güvenli client-side kontrolü (Sonsuz döngü koruması)
+        try {
+          if (typeof isAuthenticated === 'function' && isAuthenticated()) {
+            window.location.href = '/admin/dashboard';
+            return;
+          }
+        } catch (e) {
+          console.error("Auth check error:", e);
         }
 
         const form = document.getElementById('loginForm');
@@ -93,9 +97,10 @@ import '../../styles/global.css';
             try {
               const data = await loginUser(email, password);
               
-              // Backend'den dönen token bilgisini güvenli çerez olarak set ediyoruz
+              // Backend'den gelen token bilgisini güvenli çerez olarak set ediyoruz (HTTPS uyumlu)
               if (data && data.token) {
-                document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax`;
+                const isSecure = window.location.protocol === 'https:';
+                document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax${isSecure ? '; Secure' : ''}`;
               }
 
               window.location.href = '/admin/dashboard';
