@@ -2,11 +2,8 @@
 // client/src/pages/admin/dashboard.astro
 export const prerender = false; // SSR modunda çalıştığını garanti eder
 
-// 🔒 Sunucu Tarafı Güvenlik Guard'ı (SSR Auth Guard)
-const token = Astro.cookies.get('adminToken')?.value;
-if (!token) {
-  return Astro.redirect('/admin/login');
-}
+// ⚠️ DİKKAT: Sunucu tarafındaki yönlendirme (SSR Guard) tamamen kaldırıldı. 
+// Bu sayede "bu hizmetlere erişin" döngüsü ve kilitlenmeler ortadan kalkar.
 
 // Global CSS / Tailwind dosyanızın yolunu doğrulayıp import edin
 import '../../styles/global.css';
@@ -21,7 +18,7 @@ import '../../styles/global.css';
   </head>
   <body class="bg-slate-900 text-slate-100 min-h-screen p-6 font-sans">
 
-    <!-- Yetkisiz kişilerin veya botların paneli görmesini engelleyen yükleme / koruma perdesi -->
+    <!-- Yükleme / Kimlik Doğrulama Perdesi -->
     <div id="auth-guard-loader" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
       <p class="text-slate-400 text-sm font-medium">Oturum doğrulanıyor, lütfen bekleyin...</p>
@@ -125,10 +122,26 @@ import '../../styles/global.css';
 
       let globalPosts = [];
 
+      // Güvenli çerez okuma fonksiyonu (Client-side)
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         const loader = document.getElementById('auth-guard-loader');
         const mainContent = document.getElementById('admin-main-content');
-        
+
+        // 🔒 İstemci Tarafı Güvenlik Kontrolü
+        const token = getCookie('adminToken');
+        if (!token) {
+          window.location.href = '/admin/login';
+          return;
+        }
+
+        // Token varsa perdeyi kaldır ve paneli göster
         if (loader) {
           loader.style.opacity = '0';
           setTimeout(() => loader.remove(), 300);
@@ -137,11 +150,10 @@ import '../../styles/global.css';
           mainContent.style.opacity = '1';
         }
 
-        // Çıkış Butonu (Çerezi temizleyip login sayfasına yönlendirir)
+        // Çıkış Butonu
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
           logoutBtn.addEventListener('click', () => {
-            // Çerezi silmek için süresini geçmiş olarak güncelliyoruz
             document.cookie = 'adminToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT';
             if (typeof logoutUser === 'function') logoutUser();
             window.location.href = '/admin/login';
