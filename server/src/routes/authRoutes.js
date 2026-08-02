@@ -1,7 +1,7 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { login } from '../controllers/authController.js';
-import { verifyAdmin } from '../middleware/authMiddleware.js'; // Varsa mevcut middleware yolunuz
+import { login, getMe } from '../controllers/authController.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -13,9 +13,10 @@ const loginLimiter = rateLimit({
 
 router.post('/login', loginLimiter, login);
 
-// 🟢 YENİ: Dashboard ve korumalı sayfaların oturum kontrolü yapabileceği endpoint
-router.get('/verify', verifyAdmin, (req, res) => {
-  res.json({ success: true, admin: req.admin });
+// 🟢 YENİ: Dashboard ve korumalı sayfaların oturum kontrolü yapabileceği endpoint'ler
+router.get('/me', authenticateToken, getMe);
+router.get('/verify', authenticateToken, (req, res) => {
+  res.json({ success: true, user: req.user });
 });
 
 export default router;
