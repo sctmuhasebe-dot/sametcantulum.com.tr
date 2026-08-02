@@ -1,4 +1,6 @@
+// server/src/controllers/postController.js
 import pool from '../config/db.js';
+import { postSchema } from '../schemas/postSchemas.js';
 
 // Tüm yazıları getir (Liste görünümü için ağır 'content' alanı hariç tutuldu)
 export const getAllPosts = async (req, res) => {
@@ -33,7 +35,17 @@ export const getPostBySlug = async (req, res) => {
 
 // Yeni yazı oluştur (Admin)
 export const createPost = async (req, res) => {
-  const { title, slug, content, category, excerpt } = req.body;
+  const validationResult = postSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      message: 'Geçersiz veri girişi.',
+      errors: validationResult.error.errors.map(err => err.message)
+    });
+  }
+
+  const { title, slug, content, category, excerpt } = validationResult.data;
+
   try {
     const result = await pool.query(
       'INSERT INTO posts (title, slug, content, category, excerpt) VALUES ($1, $2, $3, $4, $5) RETURNING id, title, slug, content, category, excerpt, created_at, updated_at',
@@ -49,7 +61,17 @@ export const createPost = async (req, res) => {
 // Yazı güncelle (Admin)
 export const updatePost = async (req, res) => {
   const { id } = req.params;
-  const { title, slug, content, category, excerpt } = req.body;
+  const validationResult = postSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      message: 'Geçersiz veri girişi.',
+      errors: validationResult.error.errors.map(err => err.message)
+    });
+  }
+
+  const { title, slug, content, category, excerpt } = validationResult.data;
+
   try {
     const result = await pool.query(
       'UPDATE posts SET title = $1, slug = $2, content = $3, category = $4, excerpt = $5 WHERE id = $6 RETURNING id, title, slug, content, category, excerpt, created_at, updated_at',

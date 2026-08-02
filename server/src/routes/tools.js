@@ -1,27 +1,34 @@
 import express from 'express';
 import { calculateBrutToNet, calculateNetToBrut } from '../services/payrollService.js';
-import { lateFeeSchema } from '../schemas/toolSchemas.js';
+import { calculateSeveranceLogic } from '../services/severanceService.js';
+import { payrollSchema, severanceSchema, lateFeeSchema } from '../schemas/toolSchemas.js';
 
 const router = express.Router();
 
 // --------------------------------------------------------------------------
-// 1. POST /calculate-payroll (Maaş: Brüt-Net / Net-Brüt)
+// 1. POST /calculate-payroll (Zod Entegreli Maaş Hesaplama)
 // --------------------------------------------------------------------------
 router.post('/calculate-payroll', (req, res) => {
   try {
-    const { amount, type = 'brutToNet', year = 2026 } = req.body;
-    const numericAmount = Number(amount);
+    const validationResult = payrollSchema.safeParse({
+      amount: req.body.amount !== undefined ? Number(req.body.amount) : undefined,
+      type: req.body.type,
+      year: req.body.year !== undefined ? Number(req.body.year) : undefined,
+    });
 
-    if (!numericAmount || numericAmount <= 0) {
+    if (!validationResult.success) {
       return res.status(400).json({
         success: false,
-        message: 'Lütfen geçerli bir tutar giriniz.'
+        message: 'Geçersiz veri girişi.',
+        errors: validationResult.error.errors.map(err => err.message)
       });
     }
 
+    const { amount, type, year } = validationResult.data;
+
     const monthlyDetails = type === 'netToBrut'
-      ? calculateNetToBrut(numericAmount, Number(year))
-      : calculateBrutToNet(numericAmount, Number(year));
+      ? calculateNetToBrut(amount, year)
+      : calculateBrutToNet(amount, year);
 
     const totalBrut = monthlyDetails.reduce((sum, item) => sum + item.brut, 0);
     const totalNet = monthlyDetails.reduce((sum, item) => sum + item.net, 0);
@@ -32,7 +39,7 @@ router.post('/calculate-payroll', (req, res) => {
       success: true,
       data: {
         type,
-        year: Number(year),
+        year,
         annualTotals: {
           totalBrut: Number(totalBrut.toFixed(2)),
           totalNet: Number(totalNet.toFixed(2)),
@@ -53,132 +60,16 @@ router.post('/calculate-payroll', (req, res) => {
 });
 
 // --------------------------------------------------------------------------
-// 2. POST /calculate-severance (Kıdem ve İhbar Tazminatı)
+// 2. POST /calculate-severance (Zod Entegreli Kıdem ve İhbar Tazminatı)
 // --------------------------------------------------------------------------
 router.post('/calculate-severance', (req, res) => {
   try {
-    const { startDate, endDate, grossSalary, additionalBenefits = 0, includeNotice = true } = req.body;
-    const numGrossSalary = Number(grossSalary);
-    const numBenefits = Number(additionalBenefits);
-
-    if (!startDate || !endDate || !numGrossSalary || numGrossSalary <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Lütfen gerekli tarih ve ücret bilgilerini eksiksiz giriniz.'
-      });
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
-      return res.status(400).json({
-        success: false,
-        message: 'İşten ayrılış tarihi, başlama tarihinden sonra geçerli bir tarih olmalıdır.'
-      });
-    }
-
-    let years = end.getFullYear() - start.getFullYear();
-    let months = end.getMonth() - start.getMonth();
-    let days = end.getDate() - start.getDate();
-
-    if (days < 0) {
-      months -= 1;
-      const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
-      days += prevMonth.getDate();
-    }
-    if (months < 0) {
-      years -= 1;
-      months += 12;
-    }
-
-    const totalDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    const totalYearsExact = totalDays / 365.25;
-
-    const isEligibleForSeverance = totalYearsExact >= 1;
-
-    const KIDEM_TAVANI_2026 = 46398.00; 
-    const rawGiydirilmisBrut = numGrossSalary + numBenefits;
-
-    let tavanApplied = false;
-    let basisBrut = rawGiydirilmisBrut;
-    if (basisBrut > KIDEM_TAVANI_2026) {
-      basisBrut = KIDEM_TAVANI_2026;
-      tavanApplied = true;
-    }
-
-    let severanceGross = 0;
-    let severanceStampTax = 0;
-    let severanceNet = 0;
-
-    if (isEligibleForSeverance) {
-      severanceGross = basisBrut * totalYearsExact;
-      severanceStampTax = severanceGross * 0.00759;
-      severanceNet = severanceGross - severanceStampTax;
-    }
-
-    let noticeWeeks = 0;
-    if (totalDays < 180) noticeWeeks = 2;         
-    else if (totalDays < 540) noticeWeeks = 4;    
-    else if (totalDays < 1080) noticeWeeks = 6;   
-    else noticeWeeks = 8;                         
-
-    let noticeGross = 0;
-    let noticeIncomeTax = 0;
-    let noticeStampTax = 0;
-    let noticeNet = 0;
-
-    if (includeNotice) {
-      const dailyGross = rawGiydirilmisBrut / 30;
-      noticeGross = dailyGross * (noticeWeeks * 7);
-      noticeIncomeTax = noticeGross * 0.15; 
-      noticeStampTax = noticeGross * 0.00759;
-      noticeNet = noticeGross - (noticeIncomeTax + noticeStampTax);
-    }
-
-    return res.json({
-      success: true,
-      data: {
-        duration: { years, months, days, totalDays },
-        severance: {
-          isEligible: isEligibleForSeverance,
-          basisBrut: Number(basisBrut.toFixed(2)),
-          tavanApplied,
-          gross: Number(severanceGross.toFixed(2)),
-          stampTax: Number(severanceStampTax.toFixed(2)),
-          net: Number(severanceNet.toFixed(2))
-        },
-        notice: {
-          weeks: noticeWeeks,
-          gross: Number(noticeGross.toFixed(2)),
-          incomeTax: Number(noticeIncomeTax.toFixed(2)),
-          stampTax: Number(noticeStampTax.toFixed(2)),
-          net: Number(noticeNet.toFixed(2))
-        },
-        totalNetPayout: Number((severanceNet + noticeNet).toFixed(2))
-      }
-    });
-
-  } catch (error) {
-    console.error('Tazminat hesaplama hatası:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Tazminat hesaplanırken sunucu tarafında bir hata oluştu.'
-    });
-  }
-});
-
-// --------------------------------------------------------------------------
-// 3. POST /calculate-late-fee (Zod Entegreli Gecikme Zammı)
-// --------------------------------------------------------------------------
-router.post('/calculate-late-fee', (req, res) => {
-  try {
-    // 1. Zod Süzgeci ile Gelen Veriyi Doğrula
-    const validationResult = lateFeeSchema.safeParse({
-      amount: Number(req.body.amount),
-      dueDate: req.body.dueDate,
-      paymentDate: req.body.paymentDate,
-      monthlyRate: req.body.monthlyRate ? Number(req.body.monthlyRate) : 4.50
+    const validationResult = severanceSchema.safeParse({
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      grossSalary: req.body.grossSalary !== undefined ? Number(req.body.grossSalary) : undefined,
+      additionalBenefits: req.body.additionalBenefits !== undefined ? Number(req.body.additionalBenefits) : 0,
+      includeNotice: req.body.includeNotice !== undefined ? Boolean(req.body.includeNotice) : true,
     });
 
     if (!validationResult.success) {
@@ -189,7 +80,42 @@ router.post('/calculate-late-fee', (req, res) => {
       });
     }
 
-    // 2. Doğrulanmış Güvenli Verileri Al
+    const resultData = calculateSeveranceLogic(validationResult.data);
+
+    return res.json({
+      success: true,
+      data: resultData
+    });
+
+  } catch (error) {
+    console.error('Tazminat hesaplama hatası:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Tazminat hesaplanırken sunucu tarafında bir hata oluştu.'
+    });
+  }
+});
+
+// --------------------------------------------------------------------------
+// 3. POST /calculate-late-fee (Zod Entegreli Gecikme Zammı)
+// --------------------------------------------------------------------------
+router.post('/calculate-late-fee', (req, res) => {
+  try {
+    const validationResult = lateFeeSchema.safeParse({
+      amount: req.body.amount !== undefined ? Number(req.body.amount) : undefined,
+      dueDate: req.body.dueDate,
+      paymentDate: req.body.paymentDate,
+      monthlyRate: req.body.monthlyRate !== undefined ? Number(req.body.monthlyRate) : 4.50
+    });
+
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Geçersiz veri girişi.',
+        errors: validationResult.error.errors.map(err => err.message)
+      });
+    }
+
     const { amount, dueDate, paymentDate, monthlyRate = 4.50 } = validationResult.data;
 
     const start = new Date(dueDate);

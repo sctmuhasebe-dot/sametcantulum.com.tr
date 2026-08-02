@@ -8,6 +8,14 @@ import path from 'path';
 
 const router = express.Router();
 
+// --- RESMİ GAZETE ÖNBELLEK (CACHE) MEKANİZMASI ---
+let cache = {
+  dateKey: null,
+  data: null,
+  timestamp: 0
+};
+const CACHE_TTL = 60 * 60 * 1000; // 1 saatlik önbellek süresi
+
 // --- SSL SERTİFİKASI VE DİNAMİK AGENT AYARLARI ---
 let agent;
 try {
@@ -69,6 +77,14 @@ router.get('/', async (req, res) => {
       day = String(now.getDate()).padStart(2, '0');
     }
 
+    const cacheKey = `${year}-${month}-${day}`;
+
+    // Önbellek kontrolü (Cache Hit)
+    if (cache.dateKey === cacheKey && cache.data && (Date.now() - cache.timestamp < CACHE_TTL)) {
+      console.log(`[Resmi Gazete API] Önbellekten servis ediliyor (Cache Hit): ${cacheKey}`);
+      return res.json(cache.data);
+    }
+
     const formattedDate = `${year}${month}${day}`;
     const targetUrl = `https://www.resmigazete.gov.tr/eskiler/${year}/${month}/${formattedDate}.htm`;
     const mainUrl = `https://www.resmigazete.gov.tr`;
@@ -118,7 +134,6 @@ router.get('/', async (req, res) => {
         }
 
         let category = 'Yürütme ve İdare Bölümü';
-        // Türkçe locale kullanarak küçük harfe çeviriyoruz
         const lowerTitle = title.toLocaleLowerCase('tr-TR');
 
         if (lowerTitle.includes('tebliğ')) category = 'Tebliğ';
@@ -146,11 +161,20 @@ router.get('/', async (req, res) => {
 
     console.log(`[Resmi Gazete API] Başarıyla ${uniqueNews.length} adet başlık çekildi.`);
 
-    return res.json({
+    const responsePayload = {
       success: true,
       date: `${day}.${month}.${year}`,
       data: uniqueNews
-    });
+    };
+
+    // Önbelleğe kaydet
+    cache = {
+      dateKey,
+      data: responsePayload,
+      timestamp: Date.now()
+    };
+
+    return res.json(responsePayload);
 
   } catch (err) {
     console.error('[Resmi Gazete API] Kritik Hata:', err.message);

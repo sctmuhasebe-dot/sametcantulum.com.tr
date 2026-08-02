@@ -17,6 +17,10 @@ dist/
 .astro/
 build/
 
+# Vercel Build Çıktıları
+.vercel/
+client/.vercel/
+
 # Sistem ve Editör Dosyaları
 .DS_Store
 Thumbs.db

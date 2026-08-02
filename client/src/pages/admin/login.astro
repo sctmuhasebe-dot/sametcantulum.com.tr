@@ -1,6 +1,14 @@
 ---
 // client/src/pages/admin/login.astro
-// Global CSS / Tailwind dosyanız neredeyse oradan import edin
+export const prerender = false; // SSR modunda çalıştığını garanti eder
+
+// Zaten oturum açılmışsa doğrudan dashboard'a yönlendir (Sunucu Tarafı Kontrolü)
+const token = Astro.cookies.get('adminToken')?.value;
+if (token) {
+  return Astro.redirect('/admin/dashboard');
+}
+
+// Global CSS / Tailwind dosyanızın yolunu doğrulayıp import edin
 import '../../styles/global.css'; 
 ---
 
@@ -9,6 +17,7 @@ import '../../styles/global.css';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Yönetici Girişi | Samet Can Tulum</title>
+    <meta name="robots" content="noindex, nofollow" />
   </head>
   <body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
     <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-8">
@@ -26,7 +35,7 @@ import '../../styles/global.css';
             type="email"
             id="email"
             required
-            placeholder="Kullanıcı Adı"
+            placeholder="ornek@domain.com"
             class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
@@ -56,7 +65,7 @@ import '../../styles/global.css';
       import { loginUser, isAuthenticated } from '../../lib/api.js';
 
       document.addEventListener('DOMContentLoaded', () => {
-        // Zaten giriş yapılmışsa Dashboard'a yönlendir
+        // Client tarafı ek güvenlik kontrolü
         if (isAuthenticated && isAuthenticated()) {
           window.location.href = '/admin/dashboard';
           return;
@@ -82,7 +91,13 @@ import '../../styles/global.css';
             const password = passwordInput ? passwordInput.value : '';
 
             try {
-              await loginUser(email, password);
+              const data = await loginUser(email, password);
+              
+              // Backend'den dönen token bilgisini güvenli çerez olarak set ediyoruz
+              if (data && data.token) {
+                document.cookie = `adminToken=${data.token}; path=/; max-age=86400; SameSite=Lax`;
+              }
+
               window.location.href = '/admin/dashboard';
             } catch (err) {
               if (errorMessage) {

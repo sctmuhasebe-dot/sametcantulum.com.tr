@@ -30,8 +30,16 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // Eğer gelen istek izin verilen listedeyse VEYA Vercel preview domain uzantılıysa izin ver
-    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+    // Sabit izin verilen listesinde mi?
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Vercel preview domain kontrolü: Production'da sadece kendi proje pattern'imize izin verilir
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isOwnVercelPreview = /^https:\/\/sametcantulum-[a-z0-9-]+\.vercel\.app$/.test(origin);
+
+    if (isOwnVercelPreview && (!isProduction || isOwnVercelPreview)) {
       return callback(null, true);
     }
     

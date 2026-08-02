@@ -2,6 +2,12 @@
 // client/src/pages/admin/dashboard.astro
 export const prerender = false; // SSR modunda çalıştığını garanti eder
 
+// 🔒 Sunucu Tarafı Güvenlik Guard'ı (SSR Auth Guard)
+const token = Astro.cookies.get('adminToken')?.value;
+if (!token) {
+  return Astro.redirect('/admin/login');
+}
+
 // Global CSS / Tailwind dosyanızın yolunu doğrulayıp import edin
 import '../../styles/global.css';
 ---
@@ -12,7 +18,7 @@ import '../../styles/global.css';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>İçerik Yönetimi | Samet Can Tulum</title>
     <!-- 1. Arama motorlarının ve botların paneli indexlemesini kesin olarak engeller -->
-    <meta name="robots" content="noindex, nonofollow" />
+    <meta name="robots" content="noindex, nofollow" />
   </head>
   <body class="bg-slate-900 text-slate-100 min-h-screen p-6 font-sans">
 
@@ -116,37 +122,31 @@ import '../../styles/global.css';
     </div>
 
     <script>
-      import { isAuthenticated, logoutUser, fetchPosts, createPost, updatePost, deletePost } from '../../lib/api.js';
+      import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '../../lib/api.js';
 
       let globalPosts = []; // Yüklenen yazıları saklamak için hafıza değişkeni
 
       document.addEventListener('DOMContentLoaded', () => {
-        // Oturum Kontrolü (Önce güvenlik perdesini çalıştırıyoruz)
-        if (!isAuthenticated || !isAuthenticated()) {
-          window.location.href = '/admin/login';
-          return;
-        } else {
-          // Token geçerliyse koruma perdesini kaldır ve paneli göster
-          const loader = document.getElementById('auth-guard-loader');
-          const mainContent = document.getElementById('admin-main-content');
-          
-          if (loader) {
-            loader.style.opacity = '0';
-            setTimeout(() => loader.remove(), 300);
-          }
-          if (mainContent) {
-            mainContent.style.opacity = '1';
-          }
+        // SSR Auth Guard (Çerez kontrolü arkasından client tarafı UI gösterimi)
+        const loader = document.getElementById('auth-guard-loader');
+        const mainContent = document.getElementById('admin-main-content');
+        
+        if (loader) {
+          loader.style.opacity = '0';
+          setTimeout(() => loader.remove(), 300);
+        }
+        if (mainContent) {
+          mainContent.style.opacity = '1';
+        }
 
-          const userStr = localStorage.getItem('adminUser');
-          if (userStr) {
-            try {
-              const user = JSON.parse(userStr);
-              const welcomeMsg = document.getElementById('welcomeMsg');
-              if (welcomeMsg) welcomeMsg.textContent = `Oturum: ${user.email}`;
-            } catch (e) {
-              console.error('Kullanıcı bilgisi okunamadı');
-            }
+        const userStr = localStorage.getItem('adminUser');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            const welcomeMsg = document.getElementById('welcomeMsg');
+            if (welcomeMsg) welcomeMsg.textContent = `Oturum: ${user.email}`;
+          } catch (e) {
+            console.error('Kullanıcı bilgisi okunamadı');
           }
         }
 
@@ -159,18 +159,30 @@ import '../../styles/global.css';
           });
         }
 
-        // Kategori Rozeti Oluşturucu
+        // Kategori Rozeti Oluşturucu (Güvenli HTML Döndürür)
         function getCategoryBadge(categoryKey) {
+          const span = document.createElement('span');
+          span.className = 'px-2 py-0.5 text-xs rounded';
+          
           switch (categoryKey) {
             case 'mevzuat':
-              return '<span class="px-2 py-0.5 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded">⚖️ Mevzuat</span>';
+              span.className += ' bg-amber-500/10 text-amber-400 border border-amber-500/20';
+              span.textContent = '⚖️ Mevzuat';
+              break;
             case 'makaleler':
-              return '<span class="px-2 py-0.5 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded">📝 Makale</span>';
+              span.className += ' bg-blue-500/10 text-blue-400 border border-blue-500/20';
+              span.textContent = '📝 Makale';
+              break;
             case 'blog':
-              return '<span class="px-2 py-0.5 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">💡 Blog</span>';
+              span.className += ' bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+              span.textContent = '💡 Blog';
+              break;
             default:
-              return `<span class="px-2 py-0.5 text-xs bg-slate-700 rounded text-slate-300">${categoryKey || 'Genel'}</span>`;
+              span.className += ' bg-slate-700 text-slate-300';
+              span.textContent = categoryKey || 'Genel';
+              break;
           }
+          return span;
         }
 
         // Formu Sıfırla (Ekleme Moduna Döner)
@@ -190,7 +202,7 @@ import '../../styles/global.css';
           if (statusDiv) statusDiv.classList.add('hidden');
         }
 
-        // Yazıları Listeleme
+        // Yazıları Listeleme (XSS Korumalı güvenli DOM API / textContent yapısı)
         async function loadPosts() {
           const tbody = document.getElementById('postTableBody');
           const countBadge = document.getElementById('postCount');
@@ -200,62 +212,104 @@ import '../../styles/global.css';
             globalPosts = posts || [];
             if (countBadge) countBadge.textContent = `${globalPosts.length} Yazı`;
 
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
             if (!globalPosts || globalPosts.length === 0) {
-              if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">Henüz eklenmiş yazı bulunmuyor.</td></tr>`;
+              const tr = document.createElement('tr');
+              const td = document.createElement('td');
+              td.colSpan = 3;
+              td.className = 'p-4 text-center text-slate-500';
+              td.textContent = 'Henüz eklenmiş yazı bulunmuyor.';
+              tr.appendChild(td);
+              tbody.appendChild(tr);
               return;
             }
 
-            if (tbody) {
-              tbody.innerHTML = globalPosts.map((post) => `
-                <tr class="hover:bg-slate-700/30 transition-colors">
-                  <td class="p-3 font-medium text-white">${post.title}</td>
-                  <td class="p-3">${getCategoryBadge(post.category)}</td>
-                  <td class="p-3 text-right space-x-2">
-                    <button data-id="${post.id || post._id}" class="edit-btn px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded text-xs transition-all cursor-pointer">Düzenle</button>
-                    <button data-id="${post.id || post._id}" class="delete-btn px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs transition-all cursor-pointer">Sil</button>
-                  </td>
-                </tr>
-              `).join('');
+            globalPosts.forEach((post) => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-slate-700/30 transition-colors';
 
-              // Düzenleme Event Dinleyicileri
-              document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                  const id = e.currentTarget.getAttribute('data-id');
-                  const post = globalPosts.find(p => (p.id || p._id) == id);
-                  if (post) {
-                    document.getElementById('editPostId').value = id;
-                    document.getElementById('title').value = post.title || '';
-                    document.getElementById('slug').value = post.slug || '';
-                    document.getElementById('category').value = post.category || '';
-                    document.getElementById('excerpt').value = post.excerpt || '';
-                    document.getElementById('content').value = post.content || '';
+              // Başlık Hücresi
+              const titleTd = document.createElement('td');
+              titleTd.className = 'p-3 font-medium text-white';
+              titleTd.textContent = post.title; // XSS önlemi için textContent
+              tr.appendChild(titleTd);
 
-                    document.getElementById('formTitle').textContent = 'Yazıyı Düzenle';
-                    document.getElementById('saveBtn').textContent = 'Güncelle';
-                    document.getElementById('cancelEditBtn').classList.remove('hidden');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
-                });
+              // Kategori Hücresi
+              const catTd = document.createElement('td');
+              catTd.className = 'p-3';
+              catTd.appendChild(getCategoryBadge(post.category));
+              tr.appendChild(catTd);
+
+              // Eylemler Hücresi
+              const actionsTd = document.createElement('td');
+              actionsTd.className = 'p-3 text-right space-x-2';
+
+              const editBtn = document.createElement('button');
+              editBtn.setAttribute('data-id', post.id || post._id);
+              editBtn.className = 'edit-btn px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded text-xs transition-all cursor-pointer';
+              editBtn.textContent = 'Düzenle';
+              actionsTd.appendChild(editBtn);
+
+              const deleteBtn = document.createElement('button');
+              deleteBtn.setAttribute('data-id', post.id || post._id);
+              deleteBtn.className = 'delete-btn px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs transition-all cursor-pointer';
+              deleteBtn.textContent = 'Sil';
+              actionsTd.appendChild(deleteBtn);
+
+              tr.appendChild(actionsTd);
+              tbody.appendChild(tr);
+            });
+
+            // Düzenleme Event Dinleyicileri
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                const post = globalPosts.find(p => (p.id || p._id) == id);
+                if (post) {
+                  document.getElementById('editPostId').value = id;
+                  document.getElementById('title').value = post.title || '';
+                  document.getElementById('slug').value = post.slug || '';
+                  document.getElementById('category').value = post.category || '';
+                  document.getElementById('excerpt').value = post.excerpt || '';
+                  document.getElementById('content').value = post.content || '';
+
+                  document.getElementById('formTitle').textContent = 'Yazıyı Düzenle';
+                  document.getElementById('saveBtn').textContent = 'Güncelle';
+                  document.getElementById('cancelEditBtn').classList.remove('hidden');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
               });
+            });
 
-              // Silme Event Dinleyicileri
-              document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                  const id = e.currentTarget.getAttribute('data-id');
-                  if (id && confirm('Bu yazıyı silmek istediğinizden emin misiniz?')) {
-                    try {
-                      await deletePost(id);
-                      loadPosts();
-                      resetForm();
-                    } catch (err) {
-                      alert(err.message || 'Silme işlemi başarısız.');
-                    }
+            // Silme Event Dinleyicileri
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+              btn.addEventListener('click', async (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                if (id && confirm('Bu yazıyı silmek istediğinizden emin misiniz?')) {
+                  try {
+                    await deletePost(id);
+                    loadPosts();
+                    resetForm();
+                  } catch (err) {
+                    alert(err.message || 'Silme işlemi başarısız.');
                   }
-                });
+                }
               });
-            }
+            });
+
           } catch (err) {
-            if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-400">Yazılar yüklenirken bir hata oluştu. Backend bağlantısını kontrol edin.</td></tr>`;
+            if (tbody) {
+              tbody.innerHTML = '';
+              const tr = document.createElement('tr');
+              const td = document.createElement('td');
+              td.colSpan = 3;
+              td.className = 'p-4 text-center text-red-400';
+              td.textContent = 'Yazılar yüklenirken bir hata oluştu. Backend bağlantısını kontrol edin.';
+              tr.appendChild(td);
+              tbody.appendChild(tr);
+            }
           }
         }
 
