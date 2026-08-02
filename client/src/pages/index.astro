@@ -4,22 +4,19 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { API_URL } from '../lib/api';
 
-// 🧠 In-Memory Cache Mekanizması (Astro/TypeScript uyumlu nesne yapısı)
+// 🧠 In-Memory Cache Mekanizması (Sadece Blog / Yayınlar İçin)
 const cacheStore: {
   posts: { data: any[]; timestamp: number } | null;
-  resmiGazete: { data: any[]; timestamp: number } | null;
 } = {
-  posts: null,
-  resmiGazete: null
+  posts: null
 };
 
 const CACHE_DURATION = 60 * 60 * 1000; // 1 Saatlik önbellek süresi
 
-async function getCachedData() {
+async function getCachedPosts() {
   const now = Date.now();
-  
-  // 1. Yazıları Çek / Cache'den Al
   let latestPosts: any[] = [];
+  
   if (cacheStore.posts && (now - cacheStore.posts.timestamp < CACHE_DURATION)) {
     latestPosts = cacheStore.posts.data;
   } else {
@@ -40,37 +37,21 @@ async function getCachedData() {
     }
   }
 
-  // 2. Resmi Gazete Verilerini Çek / Cache'den Al
-  let resmiGazeteData: any[] = [];
-  if (cacheStore.resmiGazete && (now - cacheStore.resmiGazete.timestamp < CACHE_DURATION)) {
-    resmiGazeteData = cacheStore.resmiGazete.data;
-  } else {
-    try {
-      const gzRes = await fetch(`${API_URL}/resmi-gazete`, {
-        signal: AbortSignal.timeout(4000)
-      });
-      if (gzRes.ok) {
-        const gzJson = await gzRes.json();
-        if (gzJson.success && gzJson.data) {
-          resmiGazeteData = gzJson.data.slice(0, 5);
-          cacheStore.resmiGazete = { data: resmiGazeteData, timestamp: now };
-        }
-      } else if (cacheStore.resmiGazete) {
-        resmiGazeteData = cacheStore.resmiGazete.data;
-      }
-    } catch (err) {
-      console.error('Resmi Gazete çekilemedi, cache verisi kullanılıyor:', err);
-      if (cacheStore.resmiGazete) resmiGazeteData = cacheStore.resmiGazete.data;
-    }
-  }
-
-  return { latestPosts, resmiGazeteData };
+  return latestPosts;
 }
 
-// Verileri önbellek destekli fonksiyon ile paralel/güvenli alıyoruz
-const { latestPosts, resmiGazeteData } = await getCachedData();
+// Blog yazıları güvenli ve hızlı bir şekilde çekiliyor
+const latestPosts = await getCachedPosts();
 
-// 3. Faydalı Linkler Listesi
+// 2. Resmi Gazete & Güncel Mevzuat Hızlı Erişim Kartı
+const resmiGazeteKart = {
+  title: "T.C. Resmi Gazete",
+  url: "https://www.resmigazete.gov.tr/",
+  icon: "📰",
+  desc: "Günlük yayımlanan mevzuat, kanun, yönetmelik ve tebliğler."
+};
+
+// 3. Faydalı Linkler ve Kamu Portalları Listesi
 const faydaliLinkler = [
   { title: "Dijital Vergi Dairesi", url: "https://dijital.gib.gov.tr/", icon: "🏛️", desc: "Vergi dairesi işlemleri" },
   { title: "SGK İşveren Sistemi", url: "https://uyg.sgk.gov.tr/IsverenSistemi", icon: "💼", desc: "Sigorta prim ve bildirge işlemleri" },
@@ -83,7 +64,7 @@ const faydaliLinkler = [
   { title: "Antalya Ticaret ve Sanayi Odası", url: "https://www.atso.org.tr/tr", icon: "📜", desc: "Ticaret Odası" }
 ];
 
-// 4. Kategori Slug/Key Değerlerini Görsel Başlıklara Çeviren Gelişmiş Yardımcı Fonksiyon
+// 4. Kategori Başlık Dönüştürücü
 function getCategoryLabel(categoryKey: string) {
   if (!categoryKey) return '⚖️ Mevzuat & Resmi Yazılar';
   
@@ -97,19 +78,12 @@ function getCategoryLabel(categoryKey: string) {
     .replace(/ö/g, 'o')
     .replace(/ç/g, 'c');
   
-  if (
-    key.includes('mevzuat') || 
-    key.includes('resmi-yazilar') || 
-    key.includes('resmi-yazi') ||
-    key.includes('resmi')
-  ) {
+  if (key.includes('mevzuat') || key.includes('resmi-yazi') || key.includes('resmi')) {
     return '⚖️ Mevzuat & Resmi Yazılar';
   }
-
   if (key.includes('makale')) {
     return '📝 Makaleler';
   }
-
   if (key.includes('blog') || key.includes('yorum')) {
     return '💡 Blog & Yorumlar';
   }
@@ -121,7 +95,7 @@ function getCategoryLabel(categoryKey: string) {
     .join(' ');
 }
 
-// 5. Kategori Anahtarına Göre Doğru Kategori URL Yolu Üreten Yardımcı Fonksiyon
+// 5. Kategori URL Üretici
 function getCategoryUrl(categoryKey: string) {
   if (!categoryKey) return '/yayinlar/kategori/mevzuat';
   const cleanKey = categoryKey.toLowerCase().trim();
@@ -173,45 +147,32 @@ function getCategoryUrl(categoryKey: string) {
       </div>
     </section>
 
-    <!-- 2. CANLI RESMİ GAZETE AKIŞI -->
+    <!-- 2. RESMİ GAZETE GÜVENLİ ERİŞİM KARTI -->
     <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
-            <h2 class="font-bold text-lg text-slate-900">Resmi Gazete Son Başlıklar</h2>
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="text-3xl shrink-0 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+            {resmiGazeteKart.icon}
           </div>
-          <a href="/pratik-araclar/resmi-gazete" class="text-xs font-semibold text-emerald-600 hover:underline">Tümünü Gör →</a>
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true"></span>
+              <h2 class="font-bold text-base text-slate-900">{resmiGazeteKart.title}</h2>
+            </div>
+            <p class="text-xs text-slate-500">{resmiGazeteKart.desc}</p>
+          </div>
         </div>
-
-        {resmiGazeteData.length === 0 ? (
-          <div class="py-6 text-center text-xs text-slate-500">
-            Resmi Gazete verileri yükleniyor veya bugün yayın bulunmuyor...
-          </div>
-        ) : (
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {resmiGazeteData.map((item: any) => (
-              <a 
-                href={item.link} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                class="p-4 rounded-xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200/80 hover:border-emerald-200 transition-all group flex flex-col justify-between"
-              >
-                <p class="text-xs font-medium text-slate-800 group-hover:text-emerald-700 transition-colors line-clamp-2 mb-3">
-                  {item.title}
-                </p>
-                <div class="flex items-center justify-between mt-auto">
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">
-                    {getCategoryLabel(item.category)}
-                  </span>
-                  <span class="text-[11px] font-bold text-emerald-600 group-hover:translate-x-0.5 transition-transform">
-                    Aç ↗
-                  </span>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
+        <a 
+          href={resmiGazeteKart.url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white text-xs font-bold transition-colors shrink-0 flex items-center gap-2 shadow-sm"
+        >
+          <span>Resmi Gazete'ye Git</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
       </div>
     </section>
 
@@ -250,7 +211,7 @@ function getCategoryUrl(categoryKey: string) {
       </div>
     </section>
 
-    <!-- 4. GÜNCEL MEVZUAT & BLOG Yazilari -->
+    <!-- 4. GÜNCEL MEVZUAT & BLOG YAZILARI -->
     <section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between mb-8">
         <div>
