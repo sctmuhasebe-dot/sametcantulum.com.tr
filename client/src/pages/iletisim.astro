@@ -196,7 +196,7 @@ try {
 
   </main>
 
-  <!-- Express Backend ve Güvenlik Katmanı Entegrasyonlu Kararlı Script -->
+  <!-- Express Backend Uyumlu Temizlenmiş Script -->
   <script define:vars={{ API_URL }}>
     const form = document.getElementById('contact-form');
     const submitBtn = document.getElementById('cf-submit');
@@ -242,7 +242,6 @@ try {
       feedback.classList.add('hidden');
 
       try {
-        // Doğrudan Express Backend API Rotasına İstek Atıyoruz
         const response = await fetch(`${API_URL}/contact`, {
           method: 'POST',
           credentials: 'include',
@@ -255,16 +254,17 @@ try {
             phone,
             subject,
             message,
-            kvkk_onay: true,
-            akis_onay: true,
-            taahhutname_onay: true,
+            // 🛑 DÜZELTME: Backend tarafındaki controller ile tam uyumlu anahtar isimleri
+            kvkk: true,
+            akis: true,
+            taahhutname: true,
           }),
         });
 
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Mesaj gönderilemedi.');
+          throw new Error(result.message || result.error || 'Mesaj gönderilemedi.');
         }
 
         feedback.textContent = 'Mesajınız başarıyla gönderildi ve tarafınıza iletildi. Teşekkür ederiz!';
