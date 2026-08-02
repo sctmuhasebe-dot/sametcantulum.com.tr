@@ -3,17 +3,17 @@ import { load } from 'cheerio';
 export const prerender = false;
 
 export async function GET({ request }) {
-  const urlObj = new URL(request.url);
-  const dateStr = urlObj.searchParams.get('date');
-
-  if (!dateStr) {
-    return new Response(JSON.stringify({ success: false, message: 'Tarih parametresi gerekli.' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-
   try {
+    const urlObj = new URL(request.url);
+    const dateStr = urlObj.searchParams.get('date');
+
+    if (!dateStr) {
+      return new Response(JSON.stringify({ success: false, message: 'Tarih parametresi gerekli.' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const formattedDate = dateStr.replace(/-/g, '');
     const year = formattedDate.substring(0, 4);
     const month = formattedDate.substring(4, 6);
@@ -21,16 +21,19 @@ export async function GET({ request }) {
 
     const targetUrl = `https://www.resmigazete.gov.tr/eskiler/${year}/${month}/${formattedDate}.htm`;
 
-    const response = await fetch(targetUrl, {
+    // Vercel engelini aşmak için güvenli bir CORS proxy yönlendirmesi kullanıyoruz
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
+    const response = await fetch(proxyUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
       }
     });
 
     if (!response.ok) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: `${dateStr} tarihine ait Resmi Gazete yayını bulunamadı.` 
+        message: `${dateStr} tarihine ait Resmi Gazete yayını bulunamadı (Tatil veya pazar günü olabilir).` 
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -60,11 +63,7 @@ export async function GET({ request }) {
         else if (lowerTitle.includes('karar')) category = "Kararlar";
 
         if (!items.some(item => item.title === title)) {
-          items.push({
-            category,
-            title,
-            link
-          });
+          items.push({ category, title, link });
         }
       }
     });
@@ -78,12 +77,10 @@ export async function GET({ request }) {
     });
 
   } catch (error) {
-    // Vercel Fonksiyon Loglarında hatanın detayını görmek için
-    console.error('RESMI GAZETE API HATASI:', error);
-    
+    console.error('PROXIED API KRİTİK HATA:', error.message);
     return new Response(JSON.stringify({ 
       success: false, 
-      message: `Sunucu hatası: ${error.message}` 
+      message: 'Resmi Gazete verilerine erişilemedi. Lütfen geçerli bir tarih seçin.' 
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
