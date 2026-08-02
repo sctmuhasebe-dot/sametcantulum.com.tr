@@ -4,8 +4,6 @@ export const prerender = false;
 
 import Layout from '../../layouts/Layout.astro';
 import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
-
-const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/api';
 ---
 
 <Layout title="2026 Kıdem ve İhbar Tazminatı Hesaplama Robotu | Samet Can Tulum">
@@ -216,17 +214,17 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
   </section>
 </Layout>
 
-<script define:vars={{ PUBLIC_API_URL }}>
-  const formatTL = (val) => {
+<script>
+  const formatTL = (val: number) => {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val || 0);
   };
 
   const initSeveranceForm = () => {
-    const form = document.getElementById('severance-form');
+    const form = document.getElementById('severance-form') as HTMLFormElement;
     if (!form || form.dataset.initialized === 'true') return;
     form.dataset.initialized = 'true';
 
-    const submitBtn = document.getElementById('submit-btn');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
     const btnText = document.getElementById('btn-text');
     const btnSpinner = document.getElementById('btn-spinner');
     const errorBox = document.getElementById('error-box');
@@ -237,76 +235,112 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
 
     printBtn?.addEventListener('click', () => window.print());
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
+      if (!errorBox || !btnText || !btnSpinner || !summaryPlaceholder || !summaryResults) return;
 
       errorBox.classList.add('hidden');
       btnText.textContent = 'Hesaplanıyor...';
       btnSpinner.classList.remove('hidden');
       submitBtn.disabled = true;
 
-      const formData = new FormData(form);
-
-      const payload = {
-        startDate: formData.get('startDate'),
-        endDate: formData.get('endDate'),
-        grossSalary: Number(formData.get('grossSalary')),
-        additionalBenefits: Number(formData.get('additionalBenefits') || 0),
-        includeNotice: formData.get('includeNotice') === 'on'
-      };
-
       try {
-        const response = await fetch(`${PUBLIC_API_URL}/tools/calculate-severance`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        const formData = new FormData(form);
+        const startDateStr = formData.get('startDate') as string;
+        const endDateStr = formData.get('endDate') as string;
+        const grossSalary = Number(formData.get('grossSalary'));
+        const additionalBenefits = Number(formData.get('additionalBenefits') || 0);
+        const includeNotice = formData.get('includeNotice') === 'on';
 
-        const result = await response.json();
+        const start = new Date(startDateStr);
+        const end = new Date(endDateStr);
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || 'Hesaplama yapılırken bir hata oluştu.');
+        if (start > end) {
+          throw new Error('İşten ayrılış tarihi, işe başlama tarihinden önce olamaz.');
         }
 
-        const { data } = result;
+        // Çalışma Süresi Hesaplama (Yıl, Ay, Gün)
+        let years = end.getFullYear() - start.getFullYear();
+        let months = end.getMonth() - start.getMonth();
+        let days = end.getDate() - start.getDate();
 
-        // Süre Rozetini Güncelle
+        if (days < 0) {
+          months--;
+          const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+          days += prevMonth.getDate();
+        }
+        if (months < 0) {
+          years--;
+          months += 12;
+        }
+
+        const totalDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+        // Giydirilmiş Brüt Ücret
+        const basisBrut = grossSalary + additionalBenefits;
+
+        // 2026 Kıdem Tazminatı Tavanı (Örnek güncel tavan referansı)
+        const SEVERANCE_CEILING = 45000.00;
+        const tavanApplied = basisBrut > SEVERANCE_CEILING;
+        const effectiveSeveranceBrut = tavanApplied ? SEVERANCE_CEILING : basisBrut;
+
+        // Kıdem Brüt Tutar
+        const severanceGross = (years + (months / 12) + (days / 365.25)) * effectiveSeveranceBrut;
+        const severanceStampTax = severanceGross * 0.00759;
+        const severanceNet = severanceGross - severanceStampTax;
+
+        // İhbar Tazminatı Hesaplama
+        let noticeWeeks = 0;
+        let noticeGross = 0;
+        let noticeIncomeTax = 0;
+        let noticeStampTax = 0;
+        let noticeNet = 0;
+
+        if (includeNotice) {
+          if (totalDays < 180) noticeWeeks = 2;
+          else if (totalDays < 540) noticeWeeks = 4;
+          else if (totalDays < 1095) noticeWeeks = 6;
+          else noticeWeeks = 8;
+
+          noticeGross = (basisBrut / 30) * (noticeWeeks * 7);
+          noticeIncomeTax = noticeGross * 0.15;
+          noticeStampTax = noticeGross * 0.00759;
+          noticeNet = noticeGross - (noticeIncomeTax + noticeStampTax);
+        }
+
+        const totalNetPayout = severanceNet + (includeNotice ? noticeNet : 0);
+
+        // UI Güncellemeleri
         const tenureBadge = document.getElementById('tenure-badge');
-        if (tenureBadge && data.duration) {
-          tenureBadge.textContent = `Süre: ${data.duration.years || 0} Yıl ${data.duration.months || 0} Ay ${data.duration.days || 0} Gün`;
+        if (tenureBadge) {
+          tenureBadge.textContent = `Süre: ${years} Yıl ${months} Ay ${days} Gün`;
         }
 
-        // Kıdem Bilgileri
-        document.getElementById('severance-basis').textContent = formatTL(data.severance.basisBrut);
-        document.getElementById('severance-gross').textContent = formatTL(data.severance.gross);
-        document.getElementById('severance-tax').textContent = formatTL(data.severance.stampTax);
-        document.getElementById('severance-net').textContent = formatTL(data.severance.net);
+        document.getElementById('severance-basis')!.textContent = formatTL(basisBrut);
+        document.getElementById('severance-gross')!.textContent = formatTL(severanceGross);
+        document.getElementById('severance-tax')!.textContent = formatTL(severanceStampTax);
+        document.getElementById('severance-net')!.textContent = formatTL(severanceNet);
 
         const tavanBadge = document.getElementById('severance-tavan-applied');
         if (tavanBadge) {
-          if (data.severance.tavanApplied) {
-            tavanBadge.classList.remove('hidden');
-          } else {
-            tavanBadge.classList.add('hidden');
-          }
+          if (tavanApplied) tavanBadge.classList.remove('hidden');
+          else tavanBadge.classList.add('hidden');
         }
 
-        // İhbar Bilgileri
-        document.getElementById('notice-weeks').textContent = `${data.notice.weeks || 0} Haftalık`;
-        document.getElementById('notice-gross').textContent = formatTL(data.notice.gross);
-        document.getElementById('notice-income-tax').textContent = formatTL(data.notice.incomeTax);
-        document.getElementById('notice-stamp-tax').textContent = formatTL(data.notice.stampTax);
-        document.getElementById('notice-net').textContent = formatTL(data.notice.net);
+        document.getElementById('notice-weeks')!.textContent = `${noticeWeeks} Haftalık`;
+        document.getElementById('notice-gross')!.textContent = formatTL(noticeGross);
+        document.getElementById('notice-income-tax')!.textContent = formatTL(noticeIncomeTax);
+        document.getElementById('notice-stamp-tax')!.textContent = formatTL(noticeStampTax);
+        document.getElementById('notice-net')!.textContent = formatTL(noticeNet);
 
-        // Toplam Ödeme
-        document.getElementById('total-net-payout').textContent = formatTL(data.totalNetPayout);
+        document.getElementById('total-net-payout')!.textContent = formatTL(totalNetPayout);
 
         summaryPlaceholder.classList.add('hidden');
         summaryResults.classList.remove('hidden');
 
-      } catch (err) {
+      } catch (err: any) {
         console.error('Tazminat Hesaplama Hatası:', err);
-        errorBox.textContent = err.message || 'Bir bağlantı hatası oluştu. Lütfen sunucunun aktif olduğundan emin olun.';
+        errorBox.textContent = err.message || 'Hesaplama yapılırken bir hata oluştu.';
         errorBox.classList.remove('hidden');
       } finally {
         btnText.textContent = 'Tazminat Hesapla';
