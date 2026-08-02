@@ -3,7 +3,7 @@
 export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
-import { API_URL } from '../lib/api'; // 🚀 Merkezi API URL dahil edildi
+import { API_URL } from '../lib/api'; // Eğer başka sayfalar için kullanılıyorsa kalsın
 
 // Varsayılan İletişim Bilgileri (Fallback)
 let siteSettings = {
@@ -20,7 +20,7 @@ try {
     if (data) siteSettings = { ...siteSettings, ...data };
   }
 } catch (err) {
-  // Sessizce varsayılan değerlerle devam eder (Konsolu kirletmez)
+  // Sessizce varsayılan değerlerle devam eder
 }
 ---
 
@@ -196,18 +196,23 @@ try {
 
   </main>
 
-  <script define:vars={{ API_URL }}>
-    const form = document.getElementById('contact-form');
-    const submitBtn = document.getElementById('cf-submit');
+  <!-- Doğrudan Supabase İstemcisi Kullanan Kararlı Script -->
+  <script>
+    import { supabase } from '../lib/supabase';
+
+    const form = document.getElementById('contact-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('cf-submit') as HTMLButtonElement;
     const feedback = document.getElementById('cf-feedback');
-    const kvkkCheckbox = document.getElementById('cf-kvkk');
-    const akisCheckbox = document.getElementById('cf-akis');
-    const taahhutnameCheckbox = document.getElementById('cf-taahhutname');
+    const kvkkCheckbox = document.getElementById('cf-kvkk') as HTMLInputElement;
+    const akisCheckbox = document.getElementById('cf-akis') as HTMLInputElement;
+    const taahhutnameCheckbox = document.getElementById('cf-taahhutname') as HTMLInputElement;
 
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      // Tüm onay kutularının işaretli olup olmadığını ön yüzde kontrol et
+      if (!feedback) return;
+
+      // Onay kutusu kontrolleri
       if (kvkkCheckbox && !kvkkCheckbox.checked) {
         feedback.textContent = 'Lütfen devam etmeden önce KVKK Aydınlatma Metni onay kutusunu işaretleyin.';
         feedback.className = 'text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3';
@@ -227,30 +232,40 @@ try {
         return;
       }
 
-      const data = Object.fromEntries(new FormData(form).entries());
+      const formData = new FormData(form);
+      const name = formData.get('name') as string;
+      const email = formData.get('email') as string;
+      const phone = formData.get('phone') as string;
+      const subject = formData.get('subject') as string;
+      const message = formData.get('message') as string;
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Gönderiliyor...';
       feedback.classList.add('hidden');
 
       try {
-        const res = await fetch(`${API_URL}/contact`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        const result = await res.json().catch(() => ({}));
+        // Doğrudan Supabase tablosuna kayıt atma işlemi
+        const { error } = await supabase
+          .from('messages')
+          .insert([
+            { 
+              name, 
+              email, 
+              phone, 
+              subject, 
+              message, 
+              created_at: new Date().toISOString() 
+            }
+          ]);
 
-        if (res.ok) {
-          feedback.textContent = result.message || 'Mesajınız başarıyla gönderildi. Teşekkür ederiz!';
-          feedback.className = 'text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3';
-          form.reset();
-        } else {
-          feedback.textContent = result.message || 'Mesaj gönderilemedi, lütfen tekrar deneyin.';
-          feedback.className = 'text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3';
-        }
-      } catch (err) {
-        feedback.textContent = 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.';
+        if (error) throw error;
+
+        feedback.textContent = 'Mesajınız başarıyla gönderildi. Teşekkür ederiz!';
+        feedback.className = 'text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3';
+        form.reset();
+      } catch (err: any) {
+        console.error('Supabase Hata:', err.message);
+        feedback.textContent = 'Mesaj gönderilemedi, lütfen tekrar deneyin.';
         feedback.className = 'text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3';
       } finally {
         submitBtn.disabled = false;
