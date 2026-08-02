@@ -196,7 +196,7 @@ try {
 
   </main>
 
-  <!-- Doğrudan Supabase İstemcisi Kullanan Kararlı Script -->
+  <!-- Tam Sütunlu Kararlı Supabase Script -->
   <script>
     import { supabase } from '../lib/supabase';
 
@@ -239,12 +239,14 @@ try {
       const subject = formData.get('subject') as string;
       const message = formData.get('message') as string;
 
+      const now = new Date().toISOString();
+
       submitBtn.disabled = true;
       submitBtn.textContent = 'Gönderiliyor...';
       feedback.classList.add('hidden');
 
       try {
-        // Doğrudan Supabase tablosuna kayıt atma işlemi
+        // Supabase messages tablosuna tüm alanlar ve yasal onaylarla kayıt atma
         const { error } = await supabase
           .from('messages')
           .insert([
@@ -254,7 +256,13 @@ try {
               phone, 
               subject, 
               message, 
-              created_at: new Date().toISOString() 
+              kvkk_onay: true,
+              kvkk_onay_at: now,
+              akis_onay: true,
+              akis_onay_at: now,
+              taahhutname_onay: true,
+              taahhutname_onay_at: now,
+              created_at: now 
             }
           ]);
 
@@ -264,7 +272,7 @@ try {
         feedback.className = 'text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3';
         form.reset();
       } catch (err: any) {
-        console.error('Supabase Hata:', err.message);
+        console.error('Supabase Hata Detayı:', err.message || err);
         feedback.textContent = 'Mesaj gönderilemedi, lütfen tekrar deneyin.';
         feedback.className = 'text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3';
       } finally {
