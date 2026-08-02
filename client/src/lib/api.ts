@@ -2,7 +2,7 @@
 
 // API URL'sinin sonunda fazladan / veya /api kalmamasını garantiye alıyoruz
 const RAW_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/api';
-export const API_URL = RAW_URL.replace(/\/+$/, ''); // 🚀 Dışarı aktarıldı
+export const API_URL = RAW_URL.replace(/\/+$/, '');
 
 // 🔒 Tarayıcılar arası çerezlerin (httpOnly cookie) güvenle taşınması için şarttır
 const defaultOptions: RequestInit = {
@@ -57,32 +57,36 @@ export async function logoutUser() {
   }
 }
 
-// Tüm Yazıları veya Kategoriye Göre Yazıları Getir (Ana Fonksiyon) - Hata Yönetimiyle Güncellendi
-export async function fetchPosts(category?: string): Promise<{ data: any[]; error: string | null }> {
+// Tüm Yazıları veya Kategoriye Göre Yazıları Getir (Cookie Destekli)
+export async function fetchPosts(category?: string): Promise<any[]> {
   try {
     const endpoint = category 
       ? `${API_URL}/posts?category=${encodeURIComponent(category)}`
       : `${API_URL}/posts`;
 
-    const response = await fetch(endpoint);
+    // 🚀 DİKKAT: Admin panelinin yazıları görebilmesi için defaultOptions (credentials: include) eklendi
+    const response = await fetch(endpoint, {
+      ...defaultOptions,
+      method: 'GET'
+    });
     
     if (!response.ok) {
       console.error(`[API Error] Posts çekilemedi. Status: ${response.status}`);
-      return { data: [], error: 'İçerikler şu anda yüklenemiyor. Lütfen daha sonra tekrar deneyin.' };
+      return [];
     }
 
     const data = await response.json();
-    return { data, error: null };
+    // Backend doğrudan array dönüyorsa data, { data: [...] } dönüyorsa data.data alınır
+    return Array.isArray(data) ? data : (data.data || []);
   } catch (error) {
     console.error('Yazılar çekilirken ağ/sunucu hatası oluştu:', error);
-    return { data: [], error: 'Sunucuya bağlanılamadı. Lütfen internet bağlantınızı kontrol edin.' };
+    return [];
   }
 }
 
 // Hata alan sayfalar için getPosts alias'ı
 export async function getPosts(category?: string) {
-  const result = await fetchPosts(category);
-  return result.data;
+  return await fetchPosts(category);
 }
 
 // Tek Bir Yazıyı Slug İle Getir (Detay Sayfası İçin)
