@@ -196,14 +196,14 @@ try {
 
   </main>
 
-  <!-- Güvenli API / Nodemailer Entegrasyonlu Kararlı Script -->
-  <script>
-    const form = document.getElementById('contact-form') as HTMLFormElement;
-    const submitBtn = document.getElementById('cf-submit') as HTMLButtonElement;
+  <!-- Express Backend ve Güvenlik Katmanı Entegrasyonlu Kararlı Script -->
+  <script define:vars={{ API_URL }}>
+    const form = document.getElementById('contact-form');
+    const submitBtn = document.getElementById('cf-submit');
     const feedback = document.getElementById('cf-feedback');
-    const kvkkCheckbox = document.getElementById('cf-kvkk') as HTMLInputElement;
-    const akisCheckbox = document.getElementById('cf-akis') as HTMLInputElement;
-    const taahhutnameCheckbox = document.getElementById('cf-taahhutname') as HTMLInputElement;
+    const kvkkCheckbox = document.getElementById('cf-kvkk');
+    const akisCheckbox = document.getElementById('cf-akis');
+    const taahhutnameCheckbox = document.getElementById('cf-taahhutname');
 
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -231,20 +231,21 @@ try {
       }
 
       const formData = new FormData(form);
-      const name = formData.get('name') as string;
-      const email = formData.get('email') as string;
-      const phone = formData.get('phone') as string;
-      const subject = formData.get('subject') as string;
-      const message = formData.get('message') as string;
+      const name = formData.get('name');
+      const email = formData.get('email');
+      const phone = formData.get('phone');
+      const subject = formData.get('subject');
+      const message = formData.get('message');
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Gönderiliyor...';
       feedback.classList.add('hidden');
 
       try {
-        // Güvenli Vercel / Astro API Rotamıza İstek Atıyoruz
-        const response = await fetch('/api/contact', {
+        // Doğrudan Express Backend API Rotasına İstek Atıyoruz
+        const response = await fetch(`${API_URL}/contact`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -269,7 +270,7 @@ try {
         feedback.textContent = 'Mesajınız başarıyla gönderildi ve tarafınıza iletildi. Teşekkür ederiz!';
         feedback.className = 'text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3';
         form.reset();
-      } catch (err: any) {
+      } catch (err) {
         console.error('Form Gönderim Hatası:', err);
         feedback.textContent = `Hata: ${err.message || 'Mesaj gönderilemedi, lütfen tekrar deneyin.'}`;
         feedback.className = 'text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3';
