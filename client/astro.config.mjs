@@ -1,9 +1,14 @@
-- import node from '@astrojs/node';
-+ import vercel from '@astrojs/vercel/serverless';
+import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
+import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
 
-  export default defineConfig({
-    output: 'server',
--   adapter: node({ mode: 'standalone' }),
-+   adapter: vercel(),
-    ...
-  });
+export default defineConfig({
+  site: 'https://sametcantulum.com.tr',
+  output: 'static',
+  adapter: vercel(),
+  integrations: [sitemap()],
+  vite: {
+    plugins: [tailwindcss()],
+  },
+});
