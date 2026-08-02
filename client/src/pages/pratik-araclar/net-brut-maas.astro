@@ -5,7 +5,8 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
 
-const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/api';
+// Ortam değişkeni yoksa veya localhost ise, canlı sunucu adresini güvenli fallback olarak ata
+const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'https://api.sametcantulum.com.tr/api';
 ---
 
 <Layout title="2026 Gelir Vergisi ve Maaş Hesaplama Robotu | Samet Can Tulum">
@@ -98,7 +99,7 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
           </button>
         </form>
 
-        <div id="error-box" class="hidden p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-xs text-center font-medium"></div>
+        <div id="error-box" class="hidden p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-xs font-medium space-y-1"></div>
       </div>
 
       <!-- SAĞ KOLON: Yıllık Özet ve Maliyet Kartları -->
@@ -265,13 +266,8 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
       const amountVal = Number(formData.get('amount'));
       const sgkIndirimVal = Number(formData.get('sgkIndirim') || 5);
 
-      // Mobilde localhost çöküşlerini önlemek için akıllı fallback adresi
-      const targetApiUrl = (PUBLIC_API_URL && PUBLIC_API_URL !== 'undefined') 
-        ? PUBLIC_API_URL 
-        : 'https://api.sametcantulum.com.tr/api';
-
       try {
-        const response = await fetch(`${targetApiUrl}/tools/calculate-payroll`, {
+        const response = await fetch(`${PUBLIC_API_URL}/tools/calculate-payroll`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -369,7 +365,10 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
 
       } catch (err) {
         if (errorBox) {
-          errorBox.textContent = err.message || 'Beklenmeyen bir hata oluştu.';
+          errorBox.innerHTML = `
+            <span class="font-bold">Bağlantı Hatası:</span> ${err.message || 'Sunucuya erişilemedi.'}<br>
+            <span class="text-[10px] opacity-80">İstek atılan adres: ${PUBLIC_API_URL}</span>
+          `;
           errorBox.classList.remove('hidden');
         }
       } finally {
