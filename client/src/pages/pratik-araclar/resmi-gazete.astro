@@ -1,13 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-
-const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/api';
 ---
 
 <Layout title="Resmi Gazete & Mevzuat Takibi | Samet Can Tulum - SMMM">
   <main class="max-w-5xl mx-auto px-4 py-10">
     
-    <!-- Üst Başlık ve Tarih Seçici Kartı (Resmi Gazete Kırmızısı ile Güncellendi) -->
+    <!-- Üst Başlık ve Tarih Seçici Kartı -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-red-950 text-white p-6 md:p-8 rounded-2xl shadow-xl border border-red-900 relative overflow-hidden">
       
       <!-- Arka plan dekoratif dokunuş -->
@@ -49,7 +47,7 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
   </main>
 </Layout>
 
-<script define:vars={{ PUBLIC_API_URL }}>
+<script>
   document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('gazeteDate');
     const contentArea = document.getElementById('contentArea');
@@ -71,7 +69,8 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
       `;
 
       try {
-        const res = await fetch(`${PUBLIC_API_URL}/resmi-gazete?date=${selectedDate}`);
+        // Doğrudan kendi Vercel API endpoint'imize istek atıyoruz
+        const res = await fetch(`/api/resmi-gazete?date=${selectedDate}`);
         const result = await res.json();
 
         if (result.success && result.data && result.data.length > 0) {
@@ -118,7 +117,7 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
           <div class="bg-red-50 border border-red-200 text-red-700 p-8 rounded-2xl text-center space-y-2">
             <span class="text-2xl block">⚠️</span>
             <p class="font-bold">Veri sunucusuna ulaşılamadı.</p>
-            <p class="text-xs text-red-500">Lütfen backend servisinizin (localhost:5000) çalıştığından emin olun.</p>
+            <p class="text-xs text-red-500">Lütfen internet bağlantınızı kontrol edip tekrar deneyin.</p>
           </div>
         `;
       }

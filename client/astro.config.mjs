@@ -9,7 +9,6 @@ export default defineConfig({
   adapter: vercel(),
   integrations: [
     sitemap({
-      // SSR projelerinde sitemap'in doğru URL'lerle taranabilmesi için ek yapılandırma
       changefreq: 'weekly',
       priority: 0.7,
       lastmod: new Date(),
