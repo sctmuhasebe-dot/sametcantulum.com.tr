@@ -1,0 +1,35 @@
+# Bağımlılıklar (Node Modules)
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Ortam Değişkenleri ve Gizli Anahtarlar (.env)
+.env
+.env.*
+!.env.example
+client/.env
+client/.env.*
+server/.env
+server/.env.*
+
+# Derleme / Build Çıktıları
+dist/
+.astro/
+build/
+
+# Sistem ve Editör Dosyaları
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Log Dosyaları & Hata Kayıtları
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Geçici Dosyalar ve Veritabanı (Varsa)
+*.db
+*.sqlite
+*.sqlite3

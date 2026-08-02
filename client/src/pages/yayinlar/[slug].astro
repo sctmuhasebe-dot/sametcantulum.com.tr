@@ -1,0 +1,102 @@
+---
+// client/src/pages/yayinlar/[slug].astro
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import { fetchPostBySlug } from '../../lib/api';
+
+const { slug } = Astro.params;
+
+let post: any = null;
+let error: string | null = null;
+
+try {
+  if (slug) {
+    post = await fetchPostBySlug(slug);
+  } else {
+    error = 'Geçersiz yazı bağlantısı (Slug bulunamadı).';
+  }
+} catch (err: any) {
+  console.error('Yazı detayı çekilirken hata:', err);
+  error = err.message || `Backend sunucusundan yazı çekilemedi. Aranan slug: "${slug}"`;
+}
+
+function getCategoryLabel(categoryKey: string): { title: string; style: string } {
+  switch (categoryKey?.toLowerCase()) {
+    case 'mevzuat':
+      return { title: '⚖️ Mevzuat & Resmi Yazılar', style: 'bg-amber-50 text-amber-700 border-amber-200' };
+    case 'makaleler':
+    case 'makale':
+      return { title: '📝 Makale', style: 'bg-blue-50 text-blue-700 border-blue-200' };
+    case 'blog':
+      return { title: '💡 Blog & Sektörel Yorum', style: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+    default:
+      return { title: categoryKey || 'Genel', style: 'bg-slate-100 text-slate-700 border-slate-200' };
+  }
+}
+---
+
+<Layout title={post ? `${post.title} | Samet Can Tulum - SMMM` : 'Yazı Bulunamadı'}>
+  <main class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto space-y-8">
+      
+      <!-- Geri Dön Butonu -->
+      <div>
+        <a 
+          href="/yayinlar" 
+          class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+        >
+          <span>←</span> Tüm İçeriklere Dön
+        </a>
+      </div>
+
+      <!-- Hata Bildirim Alanı -->
+      {error && (
+        <div class="bg-red-50 text-red-700 p-6 rounded-2xl border border-red-200 max-w-xl mx-auto text-center space-y-3 shadow-sm">
+          <p class="font-bold text-lg">⚠️ Makale Yüklenemedi</p>
+          <p class="text-sm">{error}</p>
+          <div class="bg-slate-100 p-3 rounded-lg text-xs font-mono text-slate-700 inline-block text-left border border-slate-200">
+            <p><strong>Aranan Slug:</strong> {slug}</p>
+          </div>
+        </div>
+      )}
+
+      <!-- Makale Detayı -->
+      {post && (
+        <article class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 shadow-sm space-y-8">
+          
+          <header class="space-y-4 border-b border-slate-100 pb-8">
+            <div class="flex items-center gap-3 text-xs">
+              <span class={`px-3 py-1 font-bold rounded-lg border ${getCategoryLabel(post.category).style}`}>
+                {getCategoryLabel(post.category).title}
+              </span>
+              <time class="text-slate-400 font-medium">
+                {post.created_at 
+                  ? new Date(post.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+                  : ''
+                }
+              </time>
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+              {post.title}
+            </h1>
+
+            {post.excerpt && (
+              <p class="text-base sm:text-lg text-slate-600 font-normal leading-relaxed italic bg-emerald-50/50 p-5 rounded-xl border-l-4 border-emerald-600">
+                {post.excerpt}
+              </p>
+            )}
+          </header>
+
+          <!-- İçerik Metni (Açık Tema ve Okunabilir Propose Yapısı) -->
+          <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 whitespace-pre-line text-base sm:text-lg">
+            {post.content}
+          </div>
+
+        </article>
+      )}
+
+    </div>
+  </main>
+</Layout>

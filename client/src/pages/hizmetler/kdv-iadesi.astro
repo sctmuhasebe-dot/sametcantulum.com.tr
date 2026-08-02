@@ -1,0 +1,59 @@
+---
+export const prerender = true;
+import Layout from '../../layouts/Layout.astro';
+
+const hizmetDetaylari = [
+  { title: "İhracat ve İstisna KDV Süreç Hazırlığı", desc: "Mal ve hizmet ihracatından doğan KDV iadelerine ilişkin bildirimlerin ve yasal listelerin mevzuata uygun hazırlanması." },
+  { title: "İndirimli Orana Tabi İşlemler", desc: "İnşaat, gıda ve sağlık gibi indirimli KDV oranına tabi sektörlerde yıllık KDV iade dosyalarının veri altyapısının takibi." },
+  { title: "KDV Alt Firma ve Liste Analizleri", desc: "İndirilecek ve yüklenilen KDV listelerinin GİB sistemlerine entegrasyonu, alt firma sistem kontrollerinin yapılması." },
+  { title: "Vergi Dairesi Yazışma ve Süreç Takibi", desc: "Vergi dairelerinden gelen eksiklik ve kontrol yazılarına ilişkin teknik dokümantasyonun ve cevapların hazırlanması." }
+];
+---
+
+<Layout 
+  title="KDV İade Süreçleri ve Mevzuat Danışmanlığı | Samet Can Tulum"
+  description="İhracat ve indirimli orana tabi işlemlerinizden doğan KDV iade dosyalarının mevzuata uygun şekilde hazırlanması ve takibi."
+>
+  <main class="bg-slate-50 min-h-screen py-12 lg:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- BAŞLIK ALANI -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-8 lg:p-12 shadow-sm">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-semibold mb-4">
+          Mevzuat ve Dosya Hazırlığı
+        </div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+          KDV İade Süreçleri ve <span class="text-purple-600">Mevzuat Desteği</span>
+        </h1>
+        <p class="text-slate-600 text-base lg:text-lg mt-4 max-w-3xl leading-relaxed">
+          KDV iade taleplerinize ilişkin beyan, alt firma analizi ve yüklenim listeleri Gelir İdaresi Başkanlığı standartlarına uygun olarak hazırlanmaktadır.
+        </p>
+      </div>
+
+      <!-- İÇERİK GRID -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {hizmetDetaylari.map((item) => (
+          <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:border-purple-500 transition-all space-y-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-lg" aria-hidden="true">
+              📊
+            </div>
+            <h2 class="font-bold text-lg text-slate-900">{item.title}</h2>
+            <p class="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <!-- BİLGİ & İLETİŞİM ÇAĞRISI -->
+      <div class="bg-slate-900 text-white rounded-2xl p-8 lg:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h2 class="text-2xl font-bold">KDV İade Süreçleri Bilgilendirmesi</h2>
+          <p class="text-slate-300 text-sm mt-2">İade dosyalarının hazırlanması ve mevzuat gereksinimleri hakkında bilgi almak için iletişime geçebilirsiniz.</p>
+        </div>
+        <a href="/iletisim" class="px-6 py-3.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all shadow-md shrink-0 text-sm">
+          İletişime Geçin
+        </a>
+      </div>
+
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,59 @@
+---
+export const prerender = true; // 🚀 Statik build edilerek sunucu yükü azaltıldı ve TTFB optimize edildi
+import Layout from '../../layouts/Layout.astro';
+
+const hizmetDetaylari = [
+  { title: "Vergi Mevzuatı ve Yasal Haklar", desc: "Mevzuatın sağladığı muafiyet, istisna ve indirimlerin kanuni sınırlar çerçevesinde değerlendirilmesi." },
+  { title: "Mevzuat Takibi ve Risk Yönetimi", desc: "Resmi Gazete ve Maliye sirkülerlerindeki değişikliklerin takip edilerek operasyonel süreçlere uyarlanması." },
+  { title: "Vergi İnceleme ve Süreç Danışmanlığı", desc: "Vergi inceleme ve uzlaşma süreçlerinde mükelleflere mevzuat ve teknik altyapı danışmanlığı sunulması." },
+  { title: "Uluslararası Vergi Mevzuatı", desc: "Yurt dışı işlemler, transfer fiyatlandırması ve çifte vergilendirmeyi önleme anlaşmaları kapsamındaki mevzuat analizi." }
+];
+---
+
+<Layout 
+  title="Vergi Mevzuatı ve Mali Danışmanlık | Samet Can Tulum"
+  description="İşletmenizin vergi süreçlerini yasal çerçevede değerlendiriyor, mevzuat uyum risklerini yönetmenize destek oluyoruz."
+>
+  <main class="bg-slate-50 min-h-screen py-12 lg:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- BAŞLIK ALANI -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-8 lg:p-12 shadow-sm">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold mb-4">
+          Mevzuat ve Uyum Yönetimi
+        </div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+          Vergi Mevzuatı ve <span class="text-amber-600">Mali Danışmanlık</span>
+        </h1>
+        <p class="text-slate-600 text-base lg:text-lg mt-4 max-w-3xl leading-relaxed">
+          Karmaşık vergi mevzuatı süreçlerinde yasal hakların doğru uygulanması ve mevzuata tam uyum sağlanması amacıyla danışmanlık hizmeti sunulmaktadır.
+        </p>
+      </div>
+
+      <!-- İÇERİK GRID -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {hizmetDetaylari.map((item) => (
+          <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:border-amber-500 transition-all space-y-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg" aria-hidden="true">
+              📊
+            </div>
+            <h2 class="font-bold text-lg text-slate-900">{item.title}</h2>
+            <p class="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <!-- BİLGİ & İLETİŞİM ÇAĞRISI -->
+      <div class="bg-slate-900 text-white rounded-2xl p-8 lg:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h2 class="text-2xl font-bold">Vergi Uyum ve Mevzuat Bilgilendirmesi</h2>
+          <p class="text-slate-300 text-sm mt-2">İşletmenizin yasal hakları ve mevzuat uygulamaları hakkında detaylı bilgi almak için iletişime geçebilirsiniz.</p>
+        </div>
+        <a href="/iletisim" class="px-6 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition-all shadow-md shrink-0 text-sm">
+          İletişime Geçin
+        </a>
+      </div>
+
+    </div>
+  </main>
+</Layout>

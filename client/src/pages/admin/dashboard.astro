@@ -1,0 +1,341 @@
+---
+// client/src/pages/admin/dashboard.astro
+export const prerender = false; // SSR modunda çalıştığını garanti eder
+
+// Global CSS / Tailwind dosyanızın yolunu doğrulayıp import edin
+import '../../styles/global.css';
+---
+
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>İçerik Yönetimi | Samet Can Tulum</title>
+    <!-- 1. Arama motorlarının ve botların paneli indexlemesini kesin olarak engeller -->
+    <meta name="robots" content="noindex, nonofollow" />
+  </head>
+  <body class="bg-slate-900 text-slate-100 min-h-screen p-6 font-sans">
+
+    <!-- 2. Yetkisiz kişilerin veya botların paneli görmesini engelleyen yükleme / koruma perdesi -->
+    <div id="auth-guard-loader" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
+      <p class="text-slate-400 text-sm font-medium">Oturum doğrulanıyor, lütfen bekleyin...</p>
+    </div>
+
+    <!-- 3. Asıl Panel İçeriği (Başlangıçta gizlidir, token onaylanınca görünür) -->
+    <div id="admin-main-content" class="max-w-5xl mx-auto space-y-8 opacity-0 transition-opacity duration-300">
+      
+      <!-- Header -->
+      <header class="flex justify-between items-center bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
+        <div>
+          <h1 class="text-2xl font-bold text-white">Yönetim Paneli</h1>
+          <p id="welcomeMsg" class="text-slate-400 text-sm mt-1">Yükleniyor...</p>
+        </div>
+        <button id="logoutBtn" class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all text-sm font-medium cursor-pointer">
+          Çıkış Yap
+        </button>
+      </header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Sol Kolon: Yeni İçerik Ekle / Düzenle Formu -->
+        <div class="lg:col-span-1 bg-slate-800 p-6 rounded-2xl border border-slate-700 h-fit space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+            <h2 id="formTitle" class="text-lg font-semibold text-white">Yeni Yazı Ekle</h2>
+            <button id="cancelEditBtn" type="button" class="hidden text-xs text-slate-400 hover:text-white underline">
+              İptal
+            </button>
+          </div>
+          
+          <form id="postForm" class="space-y-4">
+            <input type="hidden" id="editPostId" value="" />
+            <div id="formStatus" class="hidden p-3 rounded-lg text-sm"></div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1">Başlık</label>
+              <input type="text" id="title" required placeholder="Yazı Başlığı" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1">Slug (URL)</label>
+              <input type="text" id="slug" required placeholder="yazi-basligi" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1">Yayın Kategorisi</label>
+              <select id="category" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-200">
+                <option value="" disabled selected>Bir kategori seçin...</option>
+                <option value="mevzuat">⚖️ Mevzuat & Resmi Yazılar</option>
+                <option value="makaleler">📝 Makaleler</option>
+                <option value="blog">💡 Blog & Sektörel Yorumlar</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1">Özet</label>
+              <textarea id="excerpt" rows="2" placeholder="Kısa açıklama..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1">İçerik (Markdown/Metin)</label>
+              <textarea id="content" rows="5" required placeholder="Yazı detayları..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100"></textarea>
+            </div>
+
+            <button type="submit" id="saveBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg text-sm transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
+              Yayınla
+            </button>
+          </form>
+        </div>
+
+        <!-- Sağ Kolon: Mevcut Yazılar Tablosu -->
+        <div class="lg:col-span-2 bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+            <h2 class="text-lg font-semibold text-white">Yayınlanan İçerikler</h2>
+            <span id="postCount" class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-full">0 Yazı</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+              <thead class="bg-slate-900/50 text-slate-400 uppercase text-[10px] tracking-wider">
+                <tr>
+                  <th class="p-3">Başlık</th>
+                  <th class="p-3">Kategori</th>
+                  <th class="p-3 text-right">Eylemler</th>
+                </tr>
+              </thead>
+              <tbody id="postTableBody" class="divide-y divide-slate-700/50">
+                <tr>
+                  <td colspan="3" class="p-4 text-center text-slate-500">İçerikler yükleniyor...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      import { isAuthenticated, logoutUser, fetchPosts, createPost, updatePost, deletePost } from '../../lib/api.js';
+
+      let globalPosts = []; // Yüklenen yazıları saklamak için hafıza değişkeni
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // Oturum Kontrolü (Önce güvenlik perdesini çalıştırıyoruz)
+        if (!isAuthenticated || !isAuthenticated()) {
+          window.location.href = '/admin/login';
+          return;
+        } else {
+          // Token geçerliyse koruma perdesini kaldır ve paneli göster
+          const loader = document.getElementById('auth-guard-loader');
+          const mainContent = document.getElementById('admin-main-content');
+          
+          if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 300);
+          }
+          if (mainContent) {
+            mainContent.style.opacity = '1';
+          }
+
+          const userStr = localStorage.getItem('adminUser');
+          if (userStr) {
+            try {
+              const user = JSON.parse(userStr);
+              const welcomeMsg = document.getElementById('welcomeMsg');
+              if (welcomeMsg) welcomeMsg.textContent = `Oturum: ${user.email}`;
+            } catch (e) {
+              console.error('Kullanıcı bilgisi okunamadı');
+            }
+          }
+        }
+
+        // Çıkış Butonu
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', () => {
+            if (logoutUser) logoutUser();
+            window.location.href = '/admin/login';
+          });
+        }
+
+        // Kategori Rozeti Oluşturucu
+        function getCategoryBadge(categoryKey) {
+          switch (categoryKey) {
+            case 'mevzuat':
+              return '<span class="px-2 py-0.5 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded">⚖️ Mevzuat</span>';
+            case 'makaleler':
+              return '<span class="px-2 py-0.5 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded">📝 Makale</span>';
+            case 'blog':
+              return '<span class="px-2 py-0.5 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">💡 Blog</span>';
+            default:
+              return `<span class="px-2 py-0.5 text-xs bg-slate-700 rounded text-slate-300">${categoryKey || 'Genel'}</span>`;
+          }
+        }
+
+        // Formu Sıfırla (Ekleme Moduna Döner)
+        function resetForm() {
+          const form = document.getElementById('postForm');
+          const editIdInput = document.getElementById('editPostId');
+          const formTitle = document.getElementById('formTitle');
+          const saveBtn = document.getElementById('saveBtn');
+          const cancelBtn = document.getElementById('cancelEditBtn');
+          const statusDiv = document.getElementById('formStatus');
+
+          if (form) form.reset();
+          if (editIdInput) editIdInput.value = '';
+          if (formTitle) formTitle.textContent = 'Yeni Yazı Ekle';
+          if (saveBtn) saveBtn.textContent = 'Yayınla';
+          if (cancelBtn) cancelBtn.classList.add('hidden');
+          if (statusDiv) statusDiv.classList.add('hidden');
+        }
+
+        // Yazıları Listeleme
+        async function loadPosts() {
+          const tbody = document.getElementById('postTableBody');
+          const countBadge = document.getElementById('postCount');
+          
+          try {
+            const posts = await fetchPosts();
+            globalPosts = posts || [];
+            if (countBadge) countBadge.textContent = `${globalPosts.length} Yazı`;
+
+            if (!globalPosts || globalPosts.length === 0) {
+              if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">Henüz eklenmiş yazı bulunmuyor.</td></tr>`;
+              return;
+            }
+
+            if (tbody) {
+              tbody.innerHTML = globalPosts.map((post) => `
+                <tr class="hover:bg-slate-700/30 transition-colors">
+                  <td class="p-3 font-medium text-white">${post.title}</td>
+                  <td class="p-3">${getCategoryBadge(post.category)}</td>
+                  <td class="p-3 text-right space-x-2">
+                    <button data-id="${post.id || post._id}" class="edit-btn px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded text-xs transition-all cursor-pointer">Düzenle</button>
+                    <button data-id="${post.id || post._id}" class="delete-btn px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs transition-all cursor-pointer">Sil</button>
+                  </td>
+                </tr>
+              `).join('');
+
+              // Düzenleme Event Dinleyicileri
+              document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                  const id = e.currentTarget.getAttribute('data-id');
+                  const post = globalPosts.find(p => (p.id || p._id) == id);
+                  if (post) {
+                    document.getElementById('editPostId').value = id;
+                    document.getElementById('title').value = post.title || '';
+                    document.getElementById('slug').value = post.slug || '';
+                    document.getElementById('category').value = post.category || '';
+                    document.getElementById('excerpt').value = post.excerpt || '';
+                    document.getElementById('content').value = post.content || '';
+
+                    document.getElementById('formTitle').textContent = 'Yazıyı Düzenle';
+                    document.getElementById('saveBtn').textContent = 'Güncelle';
+                    document.getElementById('cancelEditBtn').classList.remove('hidden');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                });
+              });
+
+              // Silme Event Dinleyicileri
+              document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                  const id = e.currentTarget.getAttribute('data-id');
+                  if (id && confirm('Bu yazıyı silmek istediğinizden emin misiniz?')) {
+                    try {
+                      await deletePost(id);
+                      loadPosts();
+                      resetForm();
+                    } catch (err) {
+                      alert(err.message || 'Silme işlemi başarısız.');
+                    }
+                  }
+                });
+              });
+            }
+          } catch (err) {
+            if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-400">Yazılar yüklenirken bir hata oluştu. Backend bağlantısını kontrol edin.</td></tr>`;
+          }
+        }
+
+        // İptal Butonu
+        const cancelBtn = document.getElementById('cancelEditBtn');
+        if (cancelBtn) {
+          cancelBtn.addEventListener('click', resetForm);
+        }
+
+        // Otomatik Slug (Sadece Yeni Yazı Eklerken Çalışır)
+        const titleInput = document.getElementById('title');
+        if (titleInput) {
+          titleInput.addEventListener('input', (e) => {
+            const isEditing = !!document.getElementById('editPostId').value;
+            if (isEditing) return; // Düzenleme yaparken slug'ı otomatik ezmesin
+
+            const titleVal = e.target.value;
+            const slugInput = document.getElementById('slug');
+            if (slugInput) {
+              slugInput.value = titleVal
+                .toLowerCase()
+                .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                .replace(/[^a-z0-9 -]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+            }
+          });
+        }
+
+        // Form Gönderimi (Ekle ya da Güncelle)
+        const form = document.getElementById('postForm');
+        const statusDiv = document.getElementById('formStatus');
+
+        if (form) {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (statusDiv) statusDiv.classList.add('hidden');
+
+            const editId = document.getElementById('editPostId').value;
+            const postData = {
+              title: document.getElementById('title')?.value || '',
+              slug: document.getElementById('slug')?.value || '',
+              category: document.getElementById('category')?.value || '',
+              excerpt: document.getElementById('excerpt')?.value || '',
+              content: document.getElementById('content')?.value || '',
+            };
+
+            try {
+              if (editId) {
+                // Güncelleme Modu
+                await updatePost(editId, postData);
+                if (statusDiv) {
+                  statusDiv.textContent = 'Yazı başarıyla güncellendi!';
+                  statusDiv.className = 'p-3 rounded-lg text-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';
+                  statusDiv.classList.remove('hidden');
+                }
+              } else {
+                // Yeni Ekleme Modu
+                await createPost(postData);
+                if (statusDiv) {
+                  statusDiv.textContent = 'Yazı başarıyla yayınlandı!';
+                  statusDiv.className = 'p-3 rounded-lg text-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';
+                  statusDiv.classList.remove('hidden');
+                }
+              }
+              resetForm();
+              loadPosts();
+            } catch (err) {
+              if (statusDiv) {
+                statusDiv.textContent = err.message || 'İşlem başarısız.';
+                statusDiv.className = 'p-3 rounded-lg text-sm bg-red-500/10 border border-red-500/20 text-red-400';
+                statusDiv.classList.remove('hidden');
+              }
+            }
+          });
+        }
+
+        // Sayfa ilk açıldığında postları yükle
+        loadPosts();
+      });
+    </script>
+  </body>
+</html>

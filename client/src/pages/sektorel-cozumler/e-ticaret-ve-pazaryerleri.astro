@@ -1,0 +1,65 @@
+---
+export const prerender = true; // 🚀 Statik build edilerek sunucu yükü azaltıldı ve TTFB optimize edildi
+import Layout from '../../layouts/Layout.astro';
+
+const avantajlar = [
+  { title: "Pazaryeri ve e-Fatura Süreçleri", desc: "Trendyol, Hepsiburada, Amazon ve Çiçeksepeti gibi platformlardaki satışların e-fatura mevzuatına uygun muhasebeleştirilmesi." },
+  { title: "Mikro İhracat KDV Dosya Hazırlığı", desc: "ETGB (Elektronik Ticaret Gümrük Beyannamesi) kapsamındaki mikro ihracat satışlarına ilişkin KDV iade listelerinin ve belgelerinin hazırlanması." },
+  { title: "Gider ve Komisyon Raporlaması", desc: "Pazaryeri komisyon faturaları, kargo giderleri ve iade işlemlerinin yasal defter kayıtları ve mali tablolardaki takibi." },
+  { title: "Uluslararası E-Ticaret Mevzuatı", desc: "Amazon FBA, Etsy ve Shopify yurt dışı satışlarında KDV OSS (One Stop Shop) ve uluslararası vergi mevzuatı bilgilendirmesi." }
+];
+---
+
+<Layout 
+  title="E-Ticaret ve Pazaryerleri Muhasebe Süreçleri | Samet Can Tulum"
+  description="Trendyol, Amazon, Hepsiburada ve e-ihracat süreçlerinize uygun muhasebe, e-fatura ve KDV mevzuatı desteği."
+>
+  <main class="bg-slate-50 min-h-screen py-12 lg:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- HERO AREA -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-8 lg:p-12 shadow-sm space-y-6">
+        <a href="/sektorel-cozumler" class="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-1">
+          ← Tüm Sektörlere Dön
+        </a>
+        <div class="flex items-center gap-3">
+          <span class="text-4xl" aria-hidden="true">🛒</span>
+          <div>
+            <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+              E-Ticaret ve Pazaryerleri İçin <span class="text-blue-600">Mali Süreçler</span>
+            </h1>
+            <p class="text-slate-500 text-sm mt-1">Dijital pazaryerleri, e-ihracat ve online satış operasyonlarına yönelik muhasebe ve mevzuat takibi</p>
+          </div>
+        </div>
+        <p class="text-slate-600 text-base leading-relaxed max-w-4xl pt-2">
+          E-ticaret işletmelerinin mali süreçlerinde yüksek işlem hacmi, komisyon faturaları ve e-fatura mevzuatı ön plana çıkmaktadır. Pazaryeri entegrasyon kayıtlarından mikro ihracat KDV listelerinin hazırlanmasına kadar tüm süreçler yasal mevzuata uygun olarak takip edilmektedir.
+        </p>
+      </div>
+
+      <!-- ODAK ALANLARI GRID -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {avantajlar.map((item) => (
+          <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-500 transition-all space-y-3">
+            <h2 class="font-bold text-lg text-slate-900 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-600" aria-hidden="true"></span>
+              {item.title}
+            </h2>
+            <p class="text-sm text-slate-600 leading-relaxed pl-4">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <!-- HIZLI İLETİŞİM -->
+      <div class="bg-blue-600 text-white rounded-2xl p-8 lg:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h2 class="text-2xl font-bold">E-Ticaret Muhasebe ve Mevzuat Süreçleri</h2>
+          <p class="text-blue-100 text-sm mt-2">E-ticaret operasyonlarınızın yasal mevzuata ve e-fatura süreçlerine uyumu hakkında bilgi almak için iletişime geçebilirsiniz.</p>
+        </div>
+        <a href="/iletisim" class="px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition-all shadow-md shrink-0 text-sm">
+          İletişime Geçin
+        </a>
+      </div>
+
+    </div>
+  </main>
+</Layout>

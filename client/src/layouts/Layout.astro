@@ -1,0 +1,170 @@
+---
+import Navbar from '../components/common/Navbar.astro';
+import CookieBanner from '../components/common/CookieBanner.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonicalURL?: string;
+}
+
+const { 
+  title = "Samet Can Tulum | Serbest Muhasebeci Mali Müşavir", 
+  description = "Mali müşavirlik, vergi danışmanlığı, defter tutma ve finansal süreçleriniz için profesyonel çözümler.",
+  image = "/og-image.jpg",
+  canonicalURL = Astro.url.href
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="tr" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO Meta Etiketleri -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Sosyal Medya Paylaşım Etiketleri -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta property="og:locale" content="tr_TR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(image, Astro.site)} />
+
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Google Analytics (GA4) & Çerez İzin Yönetimi -->
+    <script is:inline>
+      // Google Analytics Yükleme Fonksiyonu
+      function loadGoogleAnalytics(trackingId) {
+        if (window.gaLoaded) return;
+        window.gaLoaded = true;
+
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${trackingId}`;
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        window.gtag = gtag;
+        
+        gtag('js', new Date());
+        gtag('config', trackingId);
+      }
+
+      // Google Analytics Ölçüm Kimliği
+      const GA_TRACKING_ID = 'G-6HD4056JVK'; 
+
+      // 1. Sayfa yüklendiğinde çerez tercihi önceden kabul edilmişse çalıştır
+      const consent = localStorage.getItem('cookie_consent');
+      if (consent === 'accepted') {
+        loadGoogleAnalytics(GA_TRACKING_ID);
+      }
+
+      // 2. Kullanıcı çerez bandında "Kabul Et" butonuna bastığı anı anlık yakala
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'cookie_consent' && e.newValue === 'accepted') {
+          loadGoogleAnalytics(GA_TRACKING_ID);
+        }
+      });
+    </script>
+  </head>
+  
+  <body class="bg-ink-50 text-ink-900 font-sans min-h-screen flex flex-col">
+
+    <!-- Navigasyon Barı -->
+    <Navbar />
+
+    <!-- Ana İçerik Alanı -->
+    <main class="flex-grow">
+      <slot />
+    </main>
+
+    <!-- Alt Bilgi / Footer -->
+    <footer class="bg-ink-900 text-ink-300 mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+
+          <!-- Marka & Logo Alanı -->
+          <div class="lg:col-span-2 space-y-3">
+            <a href="/" class="flex items-center gap-3.5 group shrink-0 inline-flex">
+              <!-- Navbar ile Birebir Uyumlu Logo Kutusu -->
+              <div class="h-10 w-10 rounded-xl bg-white/90 border border-white/20 p-1 flex items-center justify-center shadow-md shadow-brand-500/10 group-hover:bg-white group-hover:scale-105 transition-all shrink-0 overflow-hidden">
+                <img 
+                  src="/images/logo.png" 
+                  alt="SMMM Samet Can Tulum Logo" 
+                  class="h-full w-full object-contain filter brightness-90 contrast-125 group-hover:brightness-100 transition-all"
+                />
+              </div>
+
+              <!-- İsim ve Unvan -->
+              <div class="flex flex-col">
+                <span class="font-bold text-base tracking-tight leading-none text-white group-hover:text-emerald-400 transition-colors">
+                  Samet Can Tulum
+                </span>
+                <span class="text-[10px] text-ink-400 font-medium tracking-wider uppercase mt-1">
+                  Serbest Muhasebeci Mali Müşavir
+                </span>
+              </div>
+            </a>
+
+            <p class="text-sm text-ink-400 max-w-sm leading-relaxed pt-1">
+              Mali müşavirlik, vergi danışmanlığı ve dijital finansal süreçlerde güncel mevzuata uygun, güvenilir danışmanlık hizmeti.
+            </p>
+          </div>
+
+          <!-- Hızlı Linkler -->
+          <div>
+            <h3 class="text-white font-semibold text-sm mb-4">Kurumsal</h3>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="/hakkimda" class="hover:text-brand-400 transition-colors">Hakkımda</a></li>
+              <li><a href="/hizmetler" class="hover:text-brand-400 transition-colors">Hizmetlerimiz</a></li>
+              <li><a href="/sektorel-cozumler" class="hover:text-brand-400 transition-colors">Sektörel Çözümler</a></li>
+              <li><a href="/yayinlar" class="hover:text-brand-400 transition-colors">Yayınlar</a></li>
+              <li><a href="/kvkk-aydinlatma-metni" class="hover:text-brand-400 transition-colors">KVKK Aydınlatma Metni</a></li>
+            </ul>
+          </div>
+
+          <!-- İletişim -->
+          <div>
+            <h3 class="text-white font-semibold text-sm mb-4">İletişim</h3>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="/iletisim" class="hover:text-brand-400 transition-colors">Bize Ulaşın</a></li>
+              <li><a href="tel:+905427846260" class="hover:text-brand-400 transition-colors">+90 (542) 784 62 60</a></li>
+              <li><a href="mailto:info@sametcantulum.com.tr" class="hover:text-brand-400 transition-colors">info@sametcantulum.com.tr</a></li>
+              <li class="text-ink-500">Antalya, Türkiye</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="mt-12 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-500">
+          <p>© {new Date().getFullYear()} Samet Can Tulum — Tüm hakları saklıdır.</p>
+          <p>Mali Müşavirlik ve Danışmanlık Hizmetleri</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Çerez Bildirim Bandı -->
+    <CookieBanner />
+
+  </body>
+</html>

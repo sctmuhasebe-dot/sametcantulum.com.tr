@@ -1,0 +1,59 @@
+---
+export const prerender = true; // 🚀 Statik build edilerek sunucu yükü azaltıldı ve TTFB optimize edildi
+import Layout from '../../layouts/Layout.astro';
+
+const hizmetDetaylari = [
+  { title: "Limited & Anonim Şirket Kuruluş İşlemleri", desc: "Ana sözleşmenin hazırlanması, MERSİS başvurusu, ticaret odası tescili ve ilgili yasal süreçlerin takibi." },
+  { title: "Şahıs Şirketi ve Teşvik Süreçleri", desc: "Şahıs şirketi tesis işlemleri ile Genç Girişimci ve ilgili vergi/sigorta teşvik mevzuatı bilgilendirmesi." },
+  { title: "Yasal Adres ve Bildirim Süreçleri", desc: "Mevzuata uygun yasal adres bildirimi, vergi dairesi yoklama ve mükellefiyet tesis süreçlerinin yönetimi." },
+  { title: "Ticaret Sicil ve Genel Kurul İşlemleri", desc: "Şirket birleşmeleri, tür değişiklikleri, adres nakli, sermaye artırımı ve hisse devir tescil süreçleri." }
+];
+---
+
+<Layout 
+  title="Ticaret Sicil ve Şirket Kuruluş İşlemleri | Samet Can Tulum"
+  description="Limited, Anonim ve Şahıs şirketi kuruluş ve tescil süreçlerinin mevzuata uygun şekilde takibi."
+>
+  <main class="bg-slate-50 min-h-screen py-12 lg:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- BAŞLIK ALANI -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-8 lg:p-12 shadow-sm">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-4">
+          Şirketleşme Süreçleri
+        </div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+          Ticaret Sicil ve <span class="text-emerald-600">Şirket Kuruluş İşlemleri</span>
+        </h1>
+        <p class="text-slate-600 text-base lg:text-lg mt-4 max-w-3xl leading-relaxed">
+          Yeni bir girişim başlatırken veya mevcut şirket yapınızı dönüştürürken yasal ve bürokratik süreçler ilgili mevzuat çerçevesinde yürütülmektedir.
+        </p>
+      </div>
+
+      <!-- İÇERİK GRID -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {hizmetDetaylari.map((item) => (
+          <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:border-emerald-500 transition-all space-y-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg" aria-hidden="true">
+              🏢
+            </div>
+            <h2 class="font-bold text-lg text-slate-900">{item.title}</h2>
+            <p class="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <!-- BİLGİ & İLETİŞİM ÇAĞRISI -->
+      <div class="bg-slate-900 text-white rounded-2xl p-8 lg:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h2 class="text-2xl font-bold">Şirket Kuruluş ve Tescil Süreçleri</h2>
+          <p class="text-slate-300 text-sm mt-2">Şirket türü seçimi, kuruluş maliyetleri ve mevzuat gereksinimleri hakkında bilgi almak için iletişime geçebilirsiniz.</p>
+        </div>
+        <a href="/iletisim" class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-md shrink-0 text-sm">
+          İletişime Geçin
+        </a>
+      </div>
+
+    </div>
+  </main>
+</Layout>

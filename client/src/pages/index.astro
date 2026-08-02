@@ -1,0 +1,307 @@
+---
+// client/src/pages/index.astro
+export const prerender = false;
+import Layout from '../layouts/Layout.astro';
+import { API_URL } from '../lib/api';
+
+// 🧠 In-Memory Cache Mekanizması (Astro/TypeScript uyumlu nesne yapısı)
+const cacheStore: {
+  posts: { data: any[]; timestamp: number } | null;
+  resmiGazete: { data: any[]; timestamp: number } | null;
+} = {
+  posts: null,
+  resmiGazete: null
+};
+
+const CACHE_DURATION = 60 * 60 * 1000; // 1 Saatlik önbellek süresi
+
+async function getCachedData() {
+  const now = Date.now();
+  
+  // 1. Yazıları Çek / Cache'den Al
+  let latestPosts: any[] = [];
+  if (cacheStore.posts && (now - cacheStore.posts.timestamp < CACHE_DURATION)) {
+    latestPosts = cacheStore.posts.data;
+  } else {
+    try {
+      const postsRes = await fetch(`${API_URL}/posts`, {
+        signal: AbortSignal.timeout(4000)
+      });
+      if (postsRes.ok) {
+        const posts = await postsRes.json();
+        latestPosts = posts.slice(0, 3);
+        cacheStore.posts = { data: latestPosts, timestamp: now };
+      } else if (cacheStore.posts) {
+        latestPosts = cacheStore.posts.data;
+      }
+    } catch (err) {
+      console.error('Yazılar çekilemedi, cache verisi kullanılıyor:', err);
+      if (cacheStore.posts) latestPosts = cacheStore.posts.data;
+    }
+  }
+
+  // 2. Resmi Gazete Verilerini Çek / Cache'den Al
+  let resmiGazeteData: any[] = [];
+  if (cacheStore.resmiGazete && (now - cacheStore.resmiGazete.timestamp < CACHE_DURATION)) {
+    resmiGazeteData = cacheStore.resmiGazete.data;
+  } else {
+    try {
+      const gzRes = await fetch(`${API_URL}/resmi-gazete`, {
+        signal: AbortSignal.timeout(4000)
+      });
+      if (gzRes.ok) {
+        const gzJson = await gzRes.json();
+        if (gzJson.success && gzJson.data) {
+          resmiGazeteData = gzJson.data.slice(0, 5);
+          cacheStore.resmiGazete = { data: resmiGazeteData, timestamp: now };
+        }
+      } else if (cacheStore.resmiGazete) {
+        resmiGazeteData = cacheStore.resmiGazete.data;
+      }
+    } catch (err) {
+      console.error('Resmi Gazete çekilemedi, cache verisi kullanılıyor:', err);
+      if (cacheStore.resmiGazete) resmiGazeteData = cacheStore.resmiGazete.data;
+    }
+  }
+
+  return { latestPosts, resmiGazeteData };
+}
+
+// Verileri önbellek destekli fonksiyon ile paralel/güvenli alıyoruz
+const { latestPosts, resmiGazeteData } = await getCachedData();
+
+// 3. Faydalı Linkler Listesi
+const faydaliLinkler = [
+  { title: "Dijital Vergi Dairesi", url: "https://dijital.gib.gov.tr/", icon: "🏛️", desc: "Vergi dairesi işlemleri" },
+  { title: "SGK İşveren Sistemi", url: "https://uyg.sgk.gov.tr/IsverenSistemi", icon: "💼", desc: "Sigorta prim ve bildirge işlemleri" },
+  { title: "e-Devlet Kapısı", url: "https://www.turkiye.gov.tr", icon: "🇹🇷", desc: "Kamu hizmetleri ve sorgulamalar" },
+  { title: "Vergi Takvimi", url: "https://gib.gov.tr/vergi-takvimi", icon: "📅", desc: "Vergi ve Yükümlülükler Takvimi" },
+  { title: "E-Beyanname Sistemi", url: "https://ebeyanname.gib.gov.tr", icon: "📑", desc: "Beyanname gönderme ve onay" },
+  { title: "Asgari Ücret", url: "https://www.csgb.gov.tr/tr/poco-pages/asgari-ucret/", icon: "🛡️", desc: "Asgari Ücret Tutarları" },
+  { title: "Ticaret Sicil Gazetesi", url: "https://www.ticaretsicil.gov.tr", icon: "📰", desc: "Şirket ilan ve tescil takibi" },
+  { title: "TCMB Gösterge Niteliğindeki Kurlar", url: "https://www.tcmb.gov.tr/kurlar/kurlar_tr.html", icon: "💱", desc: "Merkez Bankası günlük kurlar" },
+  { title: "Antalya Ticaret ve Sanayi Odası", url: "https://www.atso.org.tr/tr", icon: "📜", desc: "Ticaret Odası" }
+];
+
+// 4. Kategori Slug/Key Değerlerini Görsel Başlıklara Çeviren Gelişmiş Yardımcı Fonksiyon
+function getCategoryLabel(categoryKey: string) {
+  if (!categoryKey) return '⚖️ Mevzuat & Resmi Yazılar';
+  
+  const key = categoryKey
+    .toLowerCase()
+    .trim()
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c');
+  
+  if (
+    key.includes('mevzuat') || 
+    key.includes('resmi-yazilar') || 
+    key.includes('resmi-yazi') ||
+    key.includes('resmi')
+  ) {
+    return '⚖️ Mevzuat & Resmi Yazılar';
+  }
+
+  if (key.includes('makale')) {
+    return '📝 Makaleler';
+  }
+
+  if (key.includes('blog') || key.includes('yorum')) {
+    return '💡 Blog & Yorumlar';
+  }
+
+  return categoryKey
+    .replace(/-/g, ' ')
+    .split(' ')
+    .map(word => word ? word.charAt(0).toLocaleUpperCase('tr-TR') + word.slice(1).toLocaleLowerCase('tr-TR') : '')
+    .join(' ');
+}
+
+// 5. Kategori Anahtarına Göre Doğru Kategori URL Yolu Üreten Yardımcı Fonksiyon
+function getCategoryUrl(categoryKey: string) {
+  if (!categoryKey) return '/yayinlar/kategori/mevzuat';
+  const cleanKey = categoryKey.toLowerCase().trim();
+  if (cleanKey.includes('mevzuat') || cleanKey.includes('resmi')) {
+    return '/yayinlar/kategori/mevzuat';
+  }
+  if (cleanKey.includes('makale')) {
+    return '/yayinlar/kategori/makaleler';
+  }
+  if (cleanKey.includes('blog') || cleanKey.includes('yorum')) {
+    return '/yayinlar/kategori/blog';
+  }
+  return `/yayinlar/kategori/${cleanKey}`;
+}
+---
+
+<Layout title="SMMM Samet Can Tulum | Mali Müşavirlik" showHeader={false}>
+  <main class="bg-slate-50 text-slate-800 min-h-screen">
+    
+    <!-- 1. HERO SECTION -->
+    <section class="relative bg-white border-b border-slate-200 py-16 lg:py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl space-y-6 text-left">
+          
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
+            SMMM & Dijital Finansal Danışmanlık
+          </div>
+
+          <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Mali Süreçlerde Güncel <br />
+            <span class="text-emerald-600">Mevzuat ve Dijital</span> Odaklı Danışmanlık
+          </h1>
+
+          <p class="text-slate-600 text-base sm:text-lg font-normal leading-relaxed">
+            Mali müşavirlik, şirket kuruluşu, vergi mevzuatı ve e-dönüşüm süreçlerinde güncel, dijital ve mevzuat odaklı mesleki danışmanlık.
+          </p>
+
+          <div class="flex flex-wrap gap-4 pt-2">
+            <a 
+              href="/iletisim" 
+              class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-md hover:shadow-lg text-sm"
+            >
+              İletişime Geçin
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CANLI RESMİ GAZETE AKIŞI -->
+    <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
+            <h2 class="font-bold text-lg text-slate-900">Resmi Gazete Son Başlıklar</h2>
+          </div>
+          <a href="/pratik-araclar/resmi-gazete" class="text-xs font-semibold text-emerald-600 hover:underline">Tümünü Gör →</a>
+        </div>
+
+        {resmiGazeteData.length === 0 ? (
+          <div class="py-6 text-center text-xs text-slate-500">
+            Resmi Gazete verileri yükleniyor veya bugün yayın bulunmuyor...
+          </div>
+        ) : (
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {resmiGazeteData.map((item: any) => (
+              <a 
+                href={item.link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="p-4 rounded-xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200/80 hover:border-emerald-200 transition-all group flex flex-col justify-between"
+              >
+                <p class="text-xs font-medium text-slate-800 group-hover:text-emerald-700 transition-colors line-clamp-2 mb-3">
+                  {item.title}
+                </p>
+                <div class="flex items-center justify-between mt-auto">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">
+                    {getCategoryLabel(item.category)}
+                  </span>
+                  <span class="text-[11px] font-bold text-emerald-600 group-hover:translate-x-0.5 transition-transform">
+                    Aç ↗
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+
+    <!-- 3. FAYDALI LİNKLER VE HIZLI ERİŞİM -->
+    <section class="py-12 bg-slate-100 border-t border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="mb-8 text-left">
+          <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Faydalı Linkler & Kamu Portalları</h2>
+          <p class="text-slate-600 text-sm">Günlük finans ve vergi işlemlerinizde en çok ihtiyaç duyulan resmi bağlantılar.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {faydaliLinkler.map((link) => (
+            <a 
+              href={link.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="p-5 rounded-xl bg-white border border-slate-200 hover:border-emerald-500 hover:shadow-md transition-all group flex items-start gap-4"
+            >
+              <div class="text-3xl shrink-0 p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:scale-105 transition-transform" aria-hidden="true">
+                {link.icon}
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-slate-900 group-hover:text-emerald-600 transition-colors">
+                  {link.title}
+                </h3>
+                <p class="text-xs text-slate-500 mt-1 leading-normal">
+                  {link.desc}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. GÜNCEL MEVZUAT & BLOG Yazilari -->
+    <section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Mevzuat & Blog</h2>
+          <p class="text-slate-600 text-xs sm:text-sm">Son yayınlanan rehber ve makaleler.</p>
+        </div>
+        <a href="/yayinlar" class="px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-all">
+          Tümü →
+        </a>
+      </div>
+
+      {latestPosts.length === 0 ? (
+        <div class="bg-white p-6 rounded-xl text-center text-xs text-slate-500 border border-slate-200">
+          Henüz eklenmiş bir yazı bulunmuyor.
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {latestPosts.map((post: any) => (
+            <div class="bg-white rounded-xl border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all p-5 flex flex-col justify-between group">
+              <div>
+                <div class="flex items-center justify-between text-xs mb-3">
+                  <a 
+                    href={getCategoryUrl(post.category)}
+                    class="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded text-[10px] border border-emerald-200 transition-colors"
+                  >
+                    {getCategoryLabel(post.category)}
+                  </a>
+                  <time class="text-slate-400 text-[11px]">
+                    {post.created_at ? new Date(post.created_at).toLocaleDateString('tr-TR') : ''}
+                  </time>
+                </div>
+                <h3 class="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors mb-2 text-sm line-clamp-2">
+                  <a href={`/yayinlar/${post.slug}`}>
+                    {post.title}
+                  </a>
+                </h3>
+                <p class="text-slate-500 text-xs line-clamp-3 mb-4 leading-relaxed">
+                  {post.excerpt || post.content}
+                </p>
+              </div>
+              <a 
+                href={`/yayinlar/${post.slug}`} 
+                class="text-xs font-bold text-emerald-600 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform mt-2"
+              >
+                Devamını Oku →
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+
+  </main>
+</Layout>
