@@ -53,6 +53,46 @@ const {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Yerel SEO ve Kişisel İşletme Yapısal Verisi (JSON-LD) -->
+    <script type="application/ld+json" is:inline>
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "AccountingService",
+            "@id": "https://www.sametcantulum.com.tr/#organization",
+            "name": "SMMM Samet Can Tulum | Mali Müşavirlik",
+            "url": "https://www.sametcantulum.com.tr",
+            "logo": "https://www.sametcantulum.com.tr/images/logo.png",
+            "image": "https://www.sametcantulum.com.tr/og-image.jpg",
+            "description": "Mali müşavirlik, vergi danışmanlığı, defter tutma ve finansal süreçleriniz için profesyonel çözümler.",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Antalya",
+              "addressRegion": "Antalya",
+              "addressCountry": "TR"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "addressCountry": "TR"
+            },
+            "telephone": "+905427846260",
+            "email": "info@sametcantulum.com.tr",
+            "priceRange": "$$"
+          },
+          {
+            "@type": "Person",
+            "@id": "https://www.sametcantulum.com.tr/#person",
+            "name": "Samet Can Tulum",
+            "jobTitle": "Serbest Muhasebeci Mali Müşavir",
+            "worksFor": {
+              "@id": "https://www.sametcantulum.com.tr/#organization"
+            }
+          }
+        ]
+      }
+    </script>
+
     <!-- Google Analytics (GA4) & Çerez İzin Yönetimi -->
     <script is:inline>
       // Google Analytics Yükleme Fonksiyonu
@@ -123,13 +163,13 @@ const {
                 <span class="font-bold text-base tracking-tight leading-none text-white group-hover:text-emerald-400 transition-colors">
                   Samet Can Tulum
                 </span>
-                <span class="text-[10px] text-ink-400 font-medium tracking-wider uppercase mt-1">
+                <span class="text-[10px] text-ink-300 font-medium tracking-wider uppercase mt-1">
                   Serbest Muhasebeci Mali Müşavir
                 </span>
               </div>
             </a>
 
-            <p class="text-sm text-ink-400 max-w-sm leading-relaxed pt-1">
+            <p class="text-sm text-ink-300 max-w-sm leading-relaxed pt-1">
               Mali müşavirlik, vergi danışmanlığı ve dijital finansal süreçlerde güncel mevzuata uygun, danışmanlık hizmeti.
             </p>
           </div>
@@ -176,13 +216,13 @@ const {
               <li><a href="/iletisim" class="hover:text-brand-400 transition-colors">Bize Ulaşın</a></li>
               <li><a href="tel:+905427846260" class="hover:text-brand-400 transition-colors">+90 (542) 784 62 60</a></li>
               <li><a href="mailto:info@sametcantulum.com.tr" class="hover:text-brand-400 transition-colors">info@sametcantulum.com.tr</a></li>
-              <li class="text-ink-500">Antalya, Türkiye</li>
+              <li class="text-ink-300">Antalya, Türkiye</li>
             </ul>
           </div>
 
         </div>
 
-        <div class="mt-12 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-500">
+        <div class="mt-12 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-300">
           <p>© {new Date().getFullYear()} Samet Can Tulum — Tüm hakları saklıdır.</p>
           <p>Mali Müşavirlik ve Danışmanlık Hizmetleri</p>
         </div>

@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser'; // Çerez yönetimi için
 import helmet from 'helmet'; // 🔒 Güvenlik başlıkları (XSS, Clickjacking koruması)
 import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRoutes.js';
-import gazeteRoutes from './routes/gazeteRoutes.js';
 import toolsRoutes from './routes/tools.js';
 import contactRoutes from './routes/contactRoutes.js'; // İletişim rotası
 
@@ -56,7 +55,6 @@ app.use(cookieParser()); // Tarayıcıdan gelen çerezleri okumak için
 // API Rotaları (Endpoints)
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
-app.use('/api/resmi-gazete', gazeteRoutes);
 app.use('/api/tools', toolsRoutes);
 app.use('/api/contact', contactRoutes);
 

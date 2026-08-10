@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://sametcantulum.com.tr',
+  site: 'https://www.sametcantulum.com.tr',
   output: 'server',
   adapter: vercel(),
   integrations: [
