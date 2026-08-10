@@ -4,8 +4,6 @@ export const prerender = true;
 
 import Layout from '../../layouts/Layout.astro';
 import DisclaimerNote from '../../components/common/DisclaimerNote.astro';
-
-const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/api';
 ---
 
 <Layout title="Gecikme Zammı ve Faizi Hesaplama (2026 Güncel) | Samet Can Tulum">
@@ -134,7 +132,7 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
           <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3">
             <div>
               <span class="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Toplam Ödenecek Tutar</span>
-              <p id="resTotalPayout" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5 truncate">0,00 TL</p>
+              <p id="resTotalPayout" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5 truncate">0,00 ₺</p>
             </div>
             <button id="print-btn" type="button" class="px-3 py-1.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white rounded text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
               <span>🖨️</span> Yazdır / PDF
@@ -166,11 +164,11 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
               </div>
               <div class="flex justify-between text-xs text-slate-600 dark:text-slate-400 gap-2">
                 <span>Asıl Alacak Tutarı:</span>
-                <span id="resPrincipal" class="font-mono text-slate-900 dark:text-white font-semibold truncate">0,00 TL</span>
+                <span id="resPrincipal" class="font-mono text-slate-900 dark:text-white font-semibold truncate">0,00 ₺</span>
               </div>
               <div class="flex justify-between text-xs text-slate-600 dark:text-slate-400 gap-2">
                 <span>Hesaplanan Gecikme Zammı:</span>
-                <span id="resPenalty" class="font-mono text-amber-600 dark:text-amber-400 font-semibold truncate">0,00 TL</span>
+                <span id="resPenalty" class="font-mono text-amber-600 dark:text-amber-400 font-semibold truncate">0,00 ₺</span>
               </div>
             </div>
           </div>
@@ -189,17 +187,17 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
   </section>
 </Layout>
 
-<script define:vars={{ PUBLIC_API_URL }}>
-  const formatTL = (num) => {
-    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num || 0) + ' TL';
+<script>
+  const formatTL = (val: number) => {
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val || 0);
   };
 
   const initLateFeeForm = () => {
-    const form = document.getElementById('calcForm');
+    const form = document.getElementById('calcForm') as HTMLFormElement;
     if (!form || form.dataset.initialized === 'true') return;
     form.dataset.initialized = 'true';
 
-    const submitBtn = document.getElementById('submit-btn');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
     const btnText = document.getElementById('btn-text');
     const btnSpinner = document.getElementById('btn-spinner');
     const errorBox = document.getElementById('error-box');
@@ -210,12 +208,12 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
 
     printBtn?.addEventListener('click', () => window.print());
 
-    const paymentDateInput = document.getElementById('paymentDate');
+    const paymentDateInput = document.getElementById('paymentDate') as HTMLInputElement;
     if (paymentDateInput && !paymentDateInput.value) {
       paymentDateInput.valueAsDate = new Date();
     }
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       if (!errorBox || !btnText || !btnSpinner || !placeholder || !results) return;
 
@@ -227,44 +225,60 @@ const PUBLIC_API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000/
       submitBtn.disabled = true;
 
       try {
-        const amount = parseFloat(document.getElementById('amount').value);
-        const dueDate = document.getElementById('dueDate').value;
-        const paymentDate = document.getElementById('paymentDate').value;
-        const monthlyRate = parseFloat(document.getElementById('monthlyRate').value);
+        const formData = new FormData(form);
+        const amount = Number(formData.get('amount'));
+        const dueDateStr = formData.get('dueDate') as string;
+        const paymentDateStr = formData.get('paymentDate') as string;
+        const monthlyRate = Number(formData.get('monthlyRate'));
 
-        const response = await fetch(`${PUBLIC_API_URL}/tools/calculate-late-fee`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount, dueDate, paymentDate, monthlyRate })
-        });
+        const start = new Date(dueDateStr);
+        const end = new Date(paymentDateStr);
 
-        const resData = await response.json();
-
-        if (!resData.success) {
-          throw new Error(resData.message || 'Hesaplama yapılırken bir hata oluştu.');
+        if (start > end) {
+          throw new Error('Ödeme / hesap tarihi, vade tarihinden önce olamaz.');
         }
 
-        const { data } = resData;
+        let years = end.getFullYear() - start.getFullYear();
+        let months = end.getMonth() - start.getMonth();
+        let days = end.getDate() - start.getDate();
 
-        document.getElementById('resPrincipal').textContent = formatTL(data.principal);
-        document.getElementById('resPenalty').textContent = formatTL(data.lateFee);
-        document.getElementById('resTotalPayout').textContent = formatTL(data.totalPayout);
-        document.getElementById('resDuration').textContent = `${data.duration.months} Ay ${data.duration.days} Gün`;
-        document.getElementById('resTotalDays').textContent = `Toplam ${data.duration.totalDays} Gün`;
-        document.getElementById('resRate').textContent = `%${data.monthlyRate}`;
+        if (days < 0) {
+          months--;
+          const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+          days += prevMonth.getDate();
+        }
+        if (months < 0) {
+          years--;
+          months += 12;
+        }
+
+        const totalDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const totalMonths = (years * 12) + months + (days / 30);
+        
+        const dailyRate = monthlyRate / 30;
+        const lateFee = amount * (monthlyRate / 100) * (totalMonths);
+        const totalPayout = amount + lateFee;
+
+        // UI Güncellemeleri
+        document.getElementById('resPrincipal')!.textContent = formatTL(amount);
+        document.getElementById('resPenalty')!.textContent = formatTL(lateFee);
+        document.getElementById('resTotalPayout')!.textContent = formatTL(totalPayout);
+        document.getElementById('resDuration')!.textContent = `${years > 0 ? `${years} Yıl ` : ''}${months} Ay ${days} Gün`;
+        document.getElementById('resTotalDays')!.textContent = `Toplam ${totalDays} Gün`;
+        document.getElementById('resRate')!.textContent = `%${monthlyRate.toFixed(2)}`;
         
         const rateBadge = document.getElementById('resRate-badge');
         if (rateBadge) {
-          rateBadge.textContent = `Oran: %${data.monthlyRate}`;
+          rateBadge.textContent = `Oran: %${monthlyRate.toFixed(2)}`;
         }
 
         placeholder.classList.add('hidden');
         results.classList.remove('hidden');
 
-      } catch (err) {
+      } catch (err: any) {
         console.error('Gecikme Zammı Hesaplama Hatası:', err);
         if (errorBox) {
-          errorBox.textContent = err.message || 'Sunucuyla iletişim kurulurken hata oluştu.';
+          errorBox.textContent = err.message || 'Hesaplama yapılırken bir hata oluştu.';
           errorBox.classList.remove('hidden');
         }
       } finally {

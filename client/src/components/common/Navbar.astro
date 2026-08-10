@@ -10,7 +10,7 @@ const menuGroups = [
       { href: "/hizmetler/mali-musavirlik", icon: "📊", title: "Mali Müşavirlik ve Muhasebe" },
       { href: "/hizmetler/vergi-danismanligi", icon: "⚖️", title: "Vergi Müşavirliği ve Mevzuat" },
       { href: "/hizmetler/sirket-kurulusu", icon: "🏢", title: "Ticaret Sicil & Şirket Kuruluşu" },
-      //{ href: "/hizmetler/kdv-iadesi", icon: "💶", title: "KDV İadesi Danışmanlığı" },
+      { href: "/hizmetler/sgk-ve-bordro", icon: "📋", title: "SGK ve Bordro Hesaplamaları" },
     ],
   },
   {
@@ -72,7 +72,7 @@ const menuGroups = [
       <!-- Masaüstü Navigasyon Menüsü -->
       <nav class="hidden lg:flex items-center gap-6 text-sm font-medium">
         <a href="/" class="text-ink-300 hover:text-white transition-colors">Ana Sayfa</a>
-        <a href="/hakkimda" class="text-ink-300 hover:text-white transition-colors">Hakkımda</a>
+        <a href="/hakkimda" class="text-ink-300 hover:text-white transition-colors">Hakkımızda</a>
 
         {menuGroups.map((group) => (
           <div class="relative group py-5">
@@ -134,7 +134,7 @@ const menuGroups = [
   <div id="mobile-menu" class="lg:hidden hidden border-t border-ink-800 bg-ink-900 max-h-[calc(100vh-4rem)] overflow-y-auto">
     <div class="px-4 py-4 space-y-1">
       <a href="/" class="block px-3 py-3 rounded-xl text-sm font-semibold text-ink-200 hover:bg-ink-800 hover:text-white transition-colors">Ana Sayfa</a>
-      <a href="/hakkimda" class="block px-3 py-3 rounded-xl text-sm font-semibold text-ink-200 hover:bg-ink-800 hover:text-white transition-colors">Hakkımda</a>
+      <a href="/hakkimda" class="block px-3 py-3 rounded-xl text-sm font-semibold text-ink-200 hover:bg-ink-800 hover:text-white transition-colors">Hakkımızda</a>
 
       {menuGroups.map((group, i) => (
         <div class="border-t border-ink-800/60 pt-1 mt-1 first:border-0 first:mt-0 first:pt-0">

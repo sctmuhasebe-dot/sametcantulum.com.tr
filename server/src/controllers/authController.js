@@ -78,3 +78,35 @@ export const logout = (req, res) => {
   
   res.json({ success: true, message: 'Başarıyla çıkış yapıldı.' });
 };
+
+// 3. OTURUM BİLGİSİ GETİRME (GET ME)
+export const getMe = async (req, res) => {
+  try {
+    // authenticateToken middleware'i sayesinde req.user dolu geliyor
+    const userId = req.user.id;
+
+    const userResult = await pool.query(
+      'SELECT id, email, full_name, role FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Kullanıcı bulunamadı.' });
+    }
+
+    const user = userResult.rows[0];
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error('🔥 GET ME HATASI DETAYI:', error);
+    res.status(500).json({ success: false, message: 'Sunucu hatası oluştu.' });
+  }
+};

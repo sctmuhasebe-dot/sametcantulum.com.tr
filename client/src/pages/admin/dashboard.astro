@@ -115,9 +115,9 @@ import { API_URL } from '../../lib/api';
       </div>
     </div>
 
-    <script define:vars={{ API_URL }}>
-      import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '../../lib/api.js';
-
+    <!-- 🟢 ÇÖZÜM: script etiketine type="module" eklendi -->
+    <script type="module" define:vars={{ API_URL }}>
+import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src/lib/api.ts';
       let globalPosts = [];
 
       document.addEventListener('DOMContentLoaded', async () => {
