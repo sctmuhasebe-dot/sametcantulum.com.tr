@@ -68,6 +68,7 @@ const {
             "description": "Mali müşavirlik, vergi danışmanlığı, defter tutma ve finansal süreçleriniz için profesyonel çözümler.",
             "address": {
               "@type": "PostalAddress",
+              "@id": "https://www.sametcantulum.com.tr/#address",
               "addressLocality": "Antalya",
               "addressRegion": "Antalya",
               "addressCountry": "TR"
@@ -95,7 +96,6 @@ const {
 
     <!-- Google Analytics (GA4) & Çerez İzin Yönetimi -->
     <script is:inline>
-      // Google Analytics Yükleme Fonksiyonu
       function loadGoogleAnalytics(trackingId) {
         if (window.gaLoaded) return;
         window.gaLoaded = true;
@@ -113,16 +113,13 @@ const {
         gtag('config', trackingId);
       }
 
-      // Google Analytics Ölçüm Kimliği
       const GA_TRACKING_ID = 'G-6HD4056JVK'; 
 
-      // 1. Sayfa yüklendiğinde çerez tercihi önceden kabul edilmişse çalıştır
       const consent = localStorage.getItem('cookie_consent');
       if (consent === 'accepted') {
         loadGoogleAnalytics(GA_TRACKING_ID);
       }
 
-      // 2. Kullanıcı çerez bandında "Kabul Et" butonuna bastığı anı anlık yakala
       window.addEventListener('storage', (e) => {
         if (e.key === 'cookie_consent' && e.newValue === 'accepted') {
           loadGoogleAnalytics(GA_TRACKING_ID);
@@ -141,15 +138,14 @@ const {
       <slot />
     </main>
 
-    <!-- Alt Bilgi / Footer -->
-    <footer class="bg-ink-900 text-ink-300 mt-20">
+    <!-- Alt Bilgi / Footer (Erişilebilirlik için metin kontrastları artırıldı) -->
+    <footer class="bg-ink-900 text-gray-300 mt-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 min-h-[220px]">
 
           <!-- Marka & Logo Alanı -->
           <div class="lg:col-span-2 space-y-3">
             <a href="/" class="flex items-center gap-3.5 group shrink-0 inline-flex">
-              <!-- Navbar ile Birebir Uyumlu Logo Kutusu -->
               <div class="h-10 w-10 rounded-xl bg-white/90 border border-white/20 p-1 flex items-center justify-center shadow-md shadow-brand-500/10 group-hover:bg-white group-hover:scale-105 transition-all shrink-0 overflow-hidden">
                 <img 
                   src="/images/logo.png" 
@@ -158,54 +154,51 @@ const {
                 />
               </div>
 
-              <!-- İsim ve Unvan -->
               <div class="flex flex-col">
                 <span class="font-bold text-base tracking-tight leading-none text-white group-hover:text-emerald-400 transition-colors">
                   Samet Can Tulum
                 </span>
-                <span class="text-[10px] text-ink-300 font-medium tracking-wider uppercase mt-1">
+                <span class="text-[10px] text-gray-400 font-medium tracking-wider uppercase mt-1">
                   Serbest Muhasebeci Mali Müşavir
                 </span>
               </div>
             </a>
 
-            <p class="text-sm text-ink-300 max-w-sm leading-relaxed pt-1">
+            <p class="text-sm text-gray-300 max-w-sm leading-relaxed pt-1">
               Mali müşavirlik, vergi danışmanlığı ve dijital finansal süreçlerde güncel mevzuata uygun, danışmanlık hizmeti.
             </p>
           </div>
 
-          <!-- Hızlı Linkler -->
-         
-         <!-- Hizmetler Başlığı --> 
+          <!-- Hizmetler Başlığı --> 
           <div>
             <h3 class="text-white font-semibold text-sm mb-4">Hizmetler</h3>
             <ul class="space-y-2.5 text-sm">
-              <li><a href="/hizmetler/mali-musavirlik" class="hover:text-brand-400 transition-colors">Mali Müşavirlik ve Muhasebe Hizmetleri</a></li>
-              <li><a href="/hizmetler/vergi-danismanligi" class="hover:text-brand-400 transition-colors">Vergi Mevzuatı ve Mali Danışmanlık</a></li>
-              <li><a href="/hizmetler/sirket-kurulusu" class="hover:text-brand-400 transition-colors">Ticaret Sicil ve Şirket Kuruluş İşlemleri</a></li>
-              <li><a href="/hizmetler/sgk-ve-bordro" class="hover:text-brand-400 transition-colors">SGK ve Bordro Hizmetleri</a></li>
+              <li><a href="/hizmetler/mali-musavirlik" class="hover:text-white transition-colors">Mali Müşavirlik ve Muhasebe Hizmetleri</a></li>
+              <li><a href="/hizmetler/vergi-danismanligi" class="hover:text-white transition-colors">Vergi Mevzuatı ve Mali Danışmanlık</a></li>
+              <li><a href="/hizmetler/sirket-kurulusu" class="hover:text-white transition-colors">Ticaret Sicil ve Şirket Kuruluş İşlemleri</a></li>
+              <li><a href="/hizmetler/sgk-ve-bordro" class="hover:text-white transition-colors">SGK ve Bordro Hizmetleri</a></li>
             </ul>
           </div>
 
-         <!-- Kurumsal Başlığı --> 
+          <!-- Kurumsal Başlığı --> 
           <div>
             <h3 class="text-white font-semibold text-sm mb-4">Kurumsal</h3>
             <ul class="space-y-2.5 text-sm">
-              <li><a href="/hakkimda" class="hover:text-brand-400 transition-colors">Hakkımızda</a></li>
-              <li><a href="/hizmetler" class="hover:text-brand-400 transition-colors">Hizmetlerimiz</a></li>
-              <li><a href="/sektorel-cozumler" class="hover:text-brand-400 transition-colors">Sektörel Çözümler</a></li>
-              <li><a href="/yayinlar" class="hover:text-brand-400 transition-colors">Yayınlar</a></li>
+              <li><a href="/hakkimda" class="hover:text-white transition-colors">Hakkımızda</a></li>
+              <li><a href="/hizmetler" class="hover:text-white transition-colors">Hizmetlerimiz</a></li>
+              <li><a href="/sektorel-cozumler" class="hover:text-white transition-colors">Sektörel Çözümler</a></li>
+              <li><a href="/yayinlar" class="hover:text-white transition-colors">Yayınlar</a></li>
             </ul>
           </div>
 
-         <!-- Yasal Başlığı -->
+          <!-- Yasal Başlığı -->
           <div>
             <h3 class="text-white font-semibold text-sm mb-4">Yasal</h3>
             <ul class="space-y-2.5 text-sm">
-              <li><a href="/kvkk-aydinlatma-metni" class="hover:text-brand-400 transition-colors">KVKK Aydınlatma Metni</a></li>
-              <li><a href="/acik-riza-metni" class="hover:text-brand-400 transition-colors">Açık Rıza Metni</a></li>
-              <li><a href="/taahhutname" class="hover:text-brand-400 transition-colors">Kişisel Verilerin Aktarımına İlişkin Taahhütname</a></li>
-              <li><a href="/cerez-politikasi" class="hover:text-brand-400 transition-colors">Çerez Politası</a></li>
+              <li><a href="/kvkk-aydinlatma-metni" class="hover:text-white transition-colors">KVKK Aydınlatma Metni</a></li>
+              <li><a href="/acik-riza-metni" class="hover:text-white transition-colors">Açık Rıza Metni</a></li>
+              <li><a href="/taahhutname" class="hover:text-white transition-colors">Kişisel Verilerin Aktarımına İlişkin Taahhütname</a></li>
+              <li><a href="/cerez-politikasi" class="hover:text-white transition-colors">Çerez Politikası</a></li>
             </ul>
           </div>
 
@@ -213,16 +206,16 @@ const {
           <div>
             <h3 class="text-white font-semibold text-sm mb-4">İletişim</h3>
             <ul class="space-y-2.5 text-sm">
-              <li><a href="/iletisim" class="hover:text-brand-400 transition-colors">Bize Ulaşın</a></li>
-              <li><a href="tel:+905427846260" class="hover:text-brand-400 transition-colors">+90 (542) 784 62 60</a></li>
-              <li><a href="mailto:info@sametcantulum.com.tr" class="hover:text-brand-400 transition-colors">info@sametcantulum.com.tr</a></li>
-              <li class="text-ink-300">Antalya, Türkiye</li>
+              <li><a href="/iletisim" class="hover:text-white transition-colors">Bize Ulaşın</a></li>
+              <li><a href="tel:+905427846260" class="hover:text-white transition-colors">+90 (542) 784 62 60</a></li>
+              <li><a href="mailto:info@sametcantulum.com.tr" class="hover:text-white transition-colors">info@sametcantulum.com.tr</a></li>
+              <li class="text-gray-300">Antalya, Türkiye</li>
             </ul>
           </div>
 
         </div>
 
-        <div class="mt-12 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-300">
+        <div class="mt-12 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
           <p>© {new Date().getFullYear()} Samet Can Tulum — Tüm hakları saklıdır.</p>
           <p>Mali Müşavirlik ve Danışmanlık Hizmetleri</p>
         </div>

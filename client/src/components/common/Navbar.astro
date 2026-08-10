@@ -50,7 +50,6 @@ const menuGroups = [
 
       <!-- Logo / Marka -->
       <a href="/" class="flex items-center gap-3.5 group shrink-0">
-        <!-- Görsel Logo Kutusu (Açık arka plan + Parlak efekt) -->
         <div class="h-10 w-10 rounded-xl bg-white/90 border border-white/20 p-1 flex items-center justify-center shadow-md shadow-brand-500/10 group-hover:bg-white group-hover:scale-105 transition-all shrink-0 overflow-hidden">
           <img 
             src="/images/logo.png" 
@@ -88,14 +87,14 @@ const menuGroups = [
                     href={item.href} 
                     target={item.external ? "_blank" : "_self"}
                     rel={item.external ? "noopener noreferrer" : ""}
-                    class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold hover:bg-brand-50 text-ink-700 hover:text-brand-700 transition-colors"
+                    class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold hover:bg-brand-50 text-ink-700 hover:text-brand-900 transition-colors"
                   >
                     <div class="flex items-center gap-2.5">
                       <span class="text-sm shrink-0">{item.icon}</span>
                       <span>{item.title}</span>
                     </div>
                     {item.external && (
-                      <svg class="w-3 h-3 text-ink-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                      <svg class="w-3 h-3 text-ink-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     )}
@@ -106,7 +105,7 @@ const menuGroups = [
           </div>
         ))}
 
-        <a href="/iletisim" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold transition-colors shadow-sm text-xs shrink-0">
+        <a href="/iletisim" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors shadow-sm text-xs shrink-0">
           İletişim
         </a>
       </nav>
@@ -115,7 +114,7 @@ const menuGroups = [
       <button
         id="mobile-menu-button"
         type="button"
-        class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-ink-200 hover:bg-ink-800 transition-colors"
+        class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-ink-300 hover:bg-ink-800 transition-colors"
         aria-expanded="false"
         aria-controls="mobile-menu"
         aria-label="Menüyü aç/kapat"
@@ -133,14 +132,14 @@ const menuGroups = [
   <!-- Mobil Menü Paneli -->
   <div id="mobile-menu" class="lg:hidden hidden border-t border-ink-800 bg-ink-900 max-h-[calc(100vh-4rem)] overflow-y-auto">
     <div class="px-4 py-4 space-y-1">
-      <a href="/" class="block px-3 py-3 rounded-xl text-sm font-semibold text-ink-200 hover:bg-ink-800 hover:text-white transition-colors">Ana Sayfa</a>
-      <a href="/hakkimda" class="block px-3 py-3 rounded-xl text-sm font-semibold text-ink-200 hover:bg-ink-800 hover:text-white transition-colors">Hakkımızda</a>
+      <a href="/" class="block px-3 py-3 rounded-xl text-sm font-semibold text-ink-300 hover:bg-ink-800 hover:text-white transition-colors">Ana Sayfa</a>
+      <a href="/hakkimda" class="block px-3 py-3 rounded-xl text-sm font-semibold text-ink-300 hover:bg-ink-800 hover:text-white transition-colors">Hakkımızda</a>
 
       {menuGroups.map((group, i) => (
         <div class="border-t border-ink-800/60 pt-1 mt-1 first:border-0 first:mt-0 first:pt-0">
           <button
             type="button"
-            class="mobile-accordion-trigger w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-semibold text-ink-200 hover:bg-ink-800 hover:text-white transition-colors"
+            class="mobile-accordion-trigger w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-semibold text-ink-300 hover:bg-ink-800 hover:text-white transition-colors"
             aria-expanded="false"
             aria-controls={`mobile-submenu-${i}`}
           >
@@ -172,7 +171,7 @@ const menuGroups = [
         </div>
       ))}
 
-      <a href="/iletisim" class="block mt-4 px-4 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold text-center transition-colors shadow-sm text-sm">
+      <a href="/iletisim" class="block mt-4 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-center transition-colors shadow-sm text-sm">
         İletişim
       </a>
     </div>
