@@ -48,10 +48,13 @@ const {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(image, Astro.site)} />
 
-    <!-- Google Fonts (Inter) -->
+   <!-- Google Fonts (Inter) - Asenkron ve Engelleyici Olmayan Yükleme -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    </noscript>
 
     <!-- Yerel SEO ve Kişisel İşletme Yapısal Verisi (JSON-LD) -->
     <script type="application/ld+json" is:inline>
@@ -63,7 +66,7 @@ const {
             "@id": "https://www.sametcantulum.com.tr/#organization",
             "name": "SMMM Samet Can Tulum | Mali Müşavirlik",
             "url": "https://www.sametcantulum.com.tr",
-            "logo": "https://www.sametcantulum.com.tr/images/logo.png",
+            "logo": "https://www.sametcantulum.com.tr/images/logo.webp",
             "image": "https://www.sametcantulum.com.tr/og-image.jpg",
             "description": "Mali müşavirlik, vergi danışmanlığı, defter tutma ve finansal süreçleriniz için profesyonel çözümler.",
             "address": {
@@ -148,8 +151,10 @@ const {
             <a href="/" class="flex items-center gap-3.5 group shrink-0 inline-flex">
               <div class="h-10 w-10 rounded-xl bg-white/90 border border-white/20 p-1 flex items-center justify-center shadow-md shadow-brand-500/10 group-hover:bg-white group-hover:scale-105 transition-all shrink-0 overflow-hidden">
                 <img 
-                  src="/images/logo.png" 
-                  alt="SMMM Samet Can Tulum Logo" 
+                  src="/images/logo.webp" 
+                  alt="SMMM Samet Can Tulum Logo"
+                  width="53"
+                  height="53"
                   class="h-full w-full object-contain filter brightness-90 contrast-125 group-hover:brightness-100 transition-all"
                 />
               </div>
