@@ -206,6 +206,8 @@ try {
       feedback.classList.add('hidden');
 
       try {
+        const now = new Date().toISOString();
+
         const { error } = await supabase
           .from('messages')
           .insert([
