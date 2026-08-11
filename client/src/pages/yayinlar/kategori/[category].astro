@@ -1,9 +1,9 @@
 ---
-// src/pages/yayinlar/kategori/[category].astro
+// client/src/pages/yayinlar/kategori/[category].astro
 export const prerender = false;
 
 import Layout from '../../../layouts/Layout.astro';
-import { getPosts } from '../../../lib/api.ts';
+import { supabase } from '../../../lib/supabase';
 
 const { category } = Astro.params;
 
@@ -11,18 +11,21 @@ let posts: any[] = [];
 let error: string | null = null;
 
 try {
-  const allPosts = await getPosts();
   const currentCategorySlug = category?.toLowerCase() || '';
 
-  // URL'den gelen kategori slug'ına göre yazıları filtreliyoruz
-  posts = allPosts.filter((post: any) => {
-    const postCat = post.category?.toLowerCase() || '';
-    
-    if (currentCategorySlug === 'mevzuat') {
-      return postCat === 'mevzuat';
-    }
-    return postCat === currentCategorySlug;
-  });
+  // Supabase üzerinden doğrudan ilgili kategoriye göre filtreleme yapıyoruz
+  let query = supabase.from('posts').select('*').order('created_at', { ascending: false });
+
+  if (currentCategorySlug === 'mevzuat') {
+    query = query.eq('category', 'mevzuat');
+  } else if (currentCategorySlug) {
+    query = query.eq('category', currentCategorySlug);
+  }
+
+  const { data, error: dbError } = await query;
+
+  if (dbError) throw dbError;
+  posts = data || [];
 } catch (err: any) {
   console.error('Kategori yazıları çekilirken hata:', err);
   error = err.message || 'Yazılar yüklenirken bir sorun oluştu.';
@@ -30,11 +33,12 @@ try {
 
 // Kategorilere Göre Başlık ve Açıklama Belirleme
 function getCategoryDetails(key: string) {
-  const normalizedKey = key.toLowerCase();
+  const normalizedKey = key?.toLowerCase() || '';
   switch (normalizedKey) {
     case 'mevzuat':
       return { title: '⚖️ Mevzuat & Resmi Yazılar', desc: 'Güncel vergi, SGK ve ticaret mevzuatı duyuruları.' };
     case 'makaleler':
+    case 'makale':
       return { title: '📝 Makaleler', desc: 'Sektörel incelemeler ve teknik makaleler.' };
     case 'blog':
       return { title: '💡 Blog & Yorumlar', desc: 'Mali gündem ve finansal değerlendirmeler.' };

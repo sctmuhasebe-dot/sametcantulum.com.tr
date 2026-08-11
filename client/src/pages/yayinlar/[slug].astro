@@ -3,7 +3,7 @@
 export const prerender = false;
 
 import Layout from '../../layouts/Layout.astro';
-import { fetchPostBySlug } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
 
 const { slug } = Astro.params;
 
@@ -12,13 +12,20 @@ let error: string | null = null;
 
 try {
   if (slug) {
-    post = await fetchPostBySlug(slug);
+    const { data, error: dbError } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (dbError) throw dbError;
+    post = data;
   } else {
     error = 'Geçersiz yazı bağlantısı (Slug bulunamadı).';
   }
 } catch (err: any) {
   console.error('Yazı detayı çekilirken hata:', err);
-  error = err.message || `Backend sunucusundan yazı çekilemedi. Aranan slug: "${slug}"`;
+  error = err.message || `Veritabanından yazı çekilemedi. Aranan slug: "${slug}"`;
 }
 
 function getCategoryLabel(categoryKey: string): { title: string; style: string } {
@@ -89,7 +96,7 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
             )}
           </header>
 
-          <!-- İçerik Metni (Açık Tema ve Okunabilir Propose Yapısı) -->
+          <!-- İçerik Metni -->
           <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 whitespace-pre-line text-base sm:text-lg">
             {post.content}
           </div>

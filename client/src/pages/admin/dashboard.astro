@@ -4,7 +4,7 @@ export const prerender = false; // SSR modunda çalıştığını garanti eder
 
 // Global CSS / Tailwind dosyanızın yolunu doğrulayıp import edin
 import '../../styles/global.css';
-import { API_URL } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
 ---
 
 <html lang="tr">
@@ -115,24 +115,20 @@ import { API_URL } from '../../lib/api';
       </div>
     </div>
 
-    <!-- 🟢 ÇÖZÜM: script etiketine type="module" eklendi -->
-    <script type="module" define:vars={{ API_URL }}>
-import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src/lib/api.ts';
+    <!-- Client-side Script (Supabase Doğrudan Entegrasyon) -->
+    <script type="module">
+      import { supabase } from '../../lib/supabase';
       let globalPosts = [];
 
       document.addEventListener('DOMContentLoaded', async () => {
         const loader = document.getElementById('auth-guard-loader');
         const mainContent = document.getElementById('admin-main-content');
 
-        // 🔒 GÜVENLİ DOĞRULAMA: HttpOnly çerezi tarayıcıdan okuyamayız,
-        // ancak sunucuya /auth/verify isteği atarak oturumumuzun geçerli olup olmadığını sorabiliriz.
+        // Supabase oturum kontrolü
         try {
-          const verifyRes = await fetch(`${API_URL}/auth/verify`, {
-            method: 'GET',
-            credentials: 'include' // HttpOnly çerezi otomatik olarak istekte taşır
-          });
+          const { data: { session }, error } = await supabase.auth.getSession();
 
-          if (!verifyRes.ok) {
+          if (error || !session) {
             throw new Error('Oturum geçersiz');
           }
 
@@ -149,7 +145,6 @@ import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src
           loadPosts();
 
         } catch (err) {
-          // Oturum yoksa veya geçersizse login sayfasına yönlendir
           window.location.href = '/admin/login';
           return;
         }
@@ -159,11 +154,9 @@ import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src
         if (logoutBtn) {
           logoutBtn.addEventListener('click', async () => {
             try {
-              if (typeof logoutUser === 'function') {
-                await logoutUser();
-              }
+              await supabase.auth.signOut();
             } catch (e) {
-              // Sessizce yut
+              // Yut
             } finally {
               window.location.href = '/admin/login';
             }
@@ -216,14 +209,20 @@ import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src
           const countBadge = document.getElementById('postCount');
           
           try {
-            const posts = await fetchPosts();
-            globalPosts = posts || [];
+            const { data, error } = await supabase
+              .from('posts')
+              .select('*')
+              .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            globalPosts = data || [];
             if (countBadge) countBadge.textContent = `${globalPosts.length} Yazı`;
 
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            if (!globalPosts || globalPosts.length === 0) {
+            if (globalPosts.length === 0) {
               const tr = document.createElement('tr');
               const td = document.createElement('td');
               td.colSpan = 3;
@@ -252,13 +251,13 @@ import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src
               actionsTd.className = 'p-3 text-right space-x-2';
 
               const editBtn = document.createElement('button');
-              editBtn.setAttribute('data-id', post.id || post._id);
+              editBtn.setAttribute('data-id', post.id);
               editBtn.className = 'edit-btn px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded text-xs transition-all cursor-pointer';
               editBtn.textContent = 'Düzenle';
               actionsTd.appendChild(editBtn);
 
               const deleteBtn = document.createElement('button');
-              deleteBtn.setAttribute('data-id', post.id || post._id);
+              deleteBtn.setAttribute('data-id', post.id);
               deleteBtn.className = 'delete-btn px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs transition-all cursor-pointer';
               deleteBtn.textContent = 'Sil';
               actionsTd.appendChild(deleteBtn);
@@ -270,7 +269,7 @@ import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src
             document.querySelectorAll('.edit-btn').forEach(btn => {
               btn.addEventListener('click', (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
-                const post = globalPosts.find(p => (p.id || p._id) == id);
+                const post = globalPosts.find(p => p.id == id);
                 if (post) {
                   document.getElementById('editPostId').value = id;
                   document.getElementById('title').value = post.title || '';
@@ -292,7 +291,8 @@ import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src
                 const id = e.currentTarget.getAttribute('data-id');
                 if (id && confirm('Bu yazıyı silmek istediğinizden emin misiniz?')) {
                   try {
-                    await deletePost(id);
+                    const { error } = await supabase.from('posts').delete().eq('id', id);
+                    if (error) throw error;
                     loadPosts();
                     resetForm();
                   } catch (err) {
@@ -309,7 +309,7 @@ import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src
               const td = document.createElement('td');
               td.colSpan = 3;
               td.className = 'p-4 text-center text-red-400';
-              td.textContent = 'Yazılar yüklenirken bir hata oluştu. Backend bağlantısını kontrol edin.';
+              td.textContent = 'Yazılar yüklenirken bir hata oluştu.';
               tr.appendChild(td);
               tbody.appendChild(tr);
             }
@@ -359,14 +359,16 @@ import { logoutUser, fetchPosts, createPost, updatePost, deletePost } from '/src
 
             try {
               if (editId) {
-                await updatePost(editId, postData);
+                const { error } = await supabase.from('posts').update(postData).eq('id', editId);
+                if (error) throw error;
                 if (statusDiv) {
                   statusDiv.textContent = 'Yazı başarıyla güncellendi!';
                   statusDiv.className = 'p-3 rounded-lg text-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';
                   statusDiv.classList.remove('hidden');
                 }
               } else {
-                await createPost(postData);
+                const { error } = await supabase.from('posts').insert([postData]);
+                if (error) throw error;
                 if (statusDiv) {
                   statusDiv.textContent = 'Yazı başarıyla yayınlandı!';
                   statusDiv.className = 'p-3 rounded-lg text-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';

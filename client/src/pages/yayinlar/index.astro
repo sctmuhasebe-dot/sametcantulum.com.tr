@@ -3,16 +3,22 @@
 export const prerender = false;
 
 import Layout from '../../layouts/Layout.astro';
-import { fetchPosts } from '../../lib/api.js';
+import { supabase } from '../../lib/supabase';
 
 let posts: any[] = [];
 let error: string | null = null;
 
 try {
-  posts = await fetchPosts();
+  const { data, error: dbError } = await supabase
+    .from('posts')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (dbError) throw dbError;
+  posts = data || [];
 } catch (err: any) {
-  console.error('API İsteği Başarısız:', err);
-  error = err.message || 'Veri servisiyle bağlantı kurulamadı.';
+  console.error('Veritabanı İsteği Başarısız:', err);
+  error = err.message || 'Veritabanı servisiyle bağlantı kurulamadı.';
 }
 
 // Kategorileri İnsan Dostu Etiketlere Dönüştüren Yardımcı
