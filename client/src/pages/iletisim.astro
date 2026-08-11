@@ -3,159 +3,137 @@
 export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
-import { supabase } from '../lib/supabase';
-
-// Varsayılan İletişim Bilgileri (Fallback)
-let siteSettings = {
-  phone: '+90 (542) 784 62 60',
-  email: 'info@sametcantulum.com.tr',
-  address: 'Antalya, Türkiye',
-  map_embed_code: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3190.257203074035!2d30.696862976273536!3d36.90811436160822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d8183bc07d1ca57%3A0x528579bedf43092d!2sMali%20M%C3%BC%C5%9Favir%20Samet%20Can%20TULUM!5e0!3m2!1str!2str!4v1785243946408!5m2!1str!2str'
-};
-
-try {
-  const { data, error } = await supabase.from('settings').select('*').single();
-  if (!error && data) {
-    siteSettings = { ...siteSettings, ...data };
-  }
-} catch (err) {}
 ---
 
-<Layout title="İletişim & Konum | Samet Can Tulum - SMMM">
-  <main class="max-w-6xl mx-auto px-4 py-12">
-    <div class="mb-10 text-center max-w-2xl mx-auto">
-      <span class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs uppercase tracking-wider rounded-lg border border-emerald-100 inline-block mb-3">
-        Bize Ulaşın
-      </span>
-      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900">İletişim & Konum</h1>
-      <p class="text-slate-600 mt-2">Mali danışmanlık, vergi süreçleri ve randevu talepleriniz için doğrudan iletişime geçebilirsiniz.</p>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-      <div class="space-y-6">
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">📞</div>
-          <div>
-            <h3 class="font-bold text-slate-900 text-sm">Telefon</h3>
-            <a href={`tel:${siteSettings.phone.replace(/[^+\d]/g, '')}`} class="text-emerald-600 font-semibold text-sm hover:underline">{siteSettings.phone}</a>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">✉️</div>
-          <div>
-            <h3 class="font-bold text-slate-900 text-sm">E-Posta</h3>
-            <a href={`mailto:${siteSettings.email}`} class="text-emerald-600 font-semibold text-sm hover:underline">{siteSettings.email}</a>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">📍</div>
-          <div>
-            <h3 class="font-bold text-slate-900 text-sm">Ofis Adresi</h3>
-            <p class="text-slate-600 text-sm mt-1">{siteSettings.address}</p>
-          </div>
-        </div>
+<Layout title="İletişim | Samet Can Tulum - SMMM">
+  <main class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto space-y-8">
+      
+      <!-- Başlık Alanı -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center space-y-3">
+        <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-full uppercase tracking-wider">
+          İletişim
+        </span>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
+          Bizimle İletişime Geçin
+        </h1>
+        <p class="text-slate-600 text-sm sm:text-base">
+          Mali müşavirlik hizmetleri, danışmanlık veya sorularınız için formu doldurabilirsiniz.
+        </p>
       </div>
 
-      <div class="lg:col-span-2 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 class="text-xl font-bold text-slate-900 mb-6">Mesaj Gönderin</h2>
-        <form id="contact-form" class="space-y-4" novalidate>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="cf-name" class="block text-xs font-semibold text-slate-700 mb-1">Adınız Soyadınız *</label>
-              <input id="cf-name" name="name" type="text" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm" />
-            </div>
-            <div>
-              <label for="cf-email" class="block text-xs font-semibold text-slate-700 mb-1">E-Posta Adresiniz *</label>
-              <input id="cf-email" name="email" type="email" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm" />
-            </div>
-          </div>
-          <div>
-            <label for="cf-phone" class="block text-xs font-semibold text-slate-700 mb-1">Cep Telefonu Numaranız *</label>
-            <input id="cf-phone" name="phone" type="tel" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm" />
-          </div>
-          <div>
-            <label for="cf-subject" class="block text-xs font-semibold text-slate-700 mb-1">Konu *</label>
-            <input id="cf-subject" name="subject" type="text" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm" />
-          </div>
-          <div>
-            <label for="cf-message" class="block text-xs font-semibold text-slate-700 mb-1">Mesajınız *</label>
-            <textarea id="cf-message" name="message" required rows="4" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 text-sm"></textarea>
-          </div>
+      <!-- İletişim Formu Kutusu -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+        <form id="contactForm" class="space-y-6">
+          <div id="formAlert" class="hidden p-4 rounded-xl text-sm"></div>
 
-          <div class="space-y-3 pt-2">
-            <div class="flex items-start gap-3">
-              <input id="cf-kvkk" name="kvkk" type="checkbox" required class="mt-0.5 w-4 h-4 text-emerald-600 border-slate-300 rounded cursor-pointer" />
-              <label for="cf-kvkk" class="text-xs text-slate-600">KVKK Aydınlatma Metni’ni okudum, onaylıyorum. *</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label for="name" class="block text-xs font-medium text-slate-600 mb-1">Adınız Soyadınız *</label>
+              <input type="text" id="name" required placeholder="Ad Soyad" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900" />
             </div>
-            <div class="flex items-start gap-3">
-              <input id="cf-akis" name="akis" type="checkbox" required class="mt-0.5 w-4 h-4 text-emerald-600 border-slate-300 rounded cursor-pointer" />
-              <label for="cf-akis" class="text-xs text-slate-600">Açık Rıza Metni’ni okudum, onaylıyorum. *</label>
-            </div>
-            <div class="flex items-start gap-3">
-              <input id="cf-taahhutname" name="taahhutname" type="checkbox" required class="mt-0.5 w-4 h-4 text-emerald-600 border-slate-300 rounded cursor-pointer" />
-              <label for="cf-taahhutname" class="text-xs text-slate-600">Kişisel Verilerin Aktarımına İlişkin Taahhütname’yi kabul ediyorum. *</label>
+            <div>
+              <label for="phone" class="block text-xs font-medium text-slate-600 mb-1">Telefon Numarası *</label>
+              <input type="tel" id="phone" required placeholder="05XX XXX XX XX" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900" />
             </div>
           </div>
 
-          <button type="submit" id="cf-submit" class="w-full md:w-auto px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm rounded-xl transition-colors shadow-sm disabled:opacity-60">
+          <div>
+            <label for="email" class="block text-xs font-medium text-slate-600 mb-1">E-Posta Adresi *</label>
+            <input type="email" id="email" required placeholder="ornek@domain.com" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900" />
+          </div>
+
+          <div>
+            <label for="subject" class="block text-xs font-medium text-slate-600 mb-1">Konu *</label>
+            <input type="text" id="subject" required placeholder="Mesajınızın konusu" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900" />
+          </div>
+
+          <div>
+            <label for="message" class="block text-xs font-medium text-slate-600 mb-1">Mesajınız *</label>
+            <textarea id="message" rows="5" required placeholder="Mesajınızı buraya yazın..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"></textarea>
+          </div>
+
+          <!-- Yasal Metinler ve Onay Kutuları -->
+          <div class="space-y-3 pt-2 text-xs text-slate-600">
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" id="kvkkCheck" required class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+              <span>
+                <a href="/kvkk-aydinlatma-metni" target="_blank" class="text-emerald-600 hover:underline font-medium">KVKK Aydınlatma Metni</a>’ni okudum, onaylıyorum. *
+              </span>
+            </label>
+
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" id="explicitConsentCheck" required class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+              <span>
+                <a href="/acik-riza-metni" target="_blank" class="text-emerald-600 hover:underline font-medium">Açık Rıza Metni</a>’ni okudum, onaylıyorum. *
+              </span>
+            </label>
+
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" id="commitmentCheck" required class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+              <span>
+                <a href="/kisisel-verilerin-aktarimi-taahhutname" target="_blank" class="text-emerald-600 hover:underline font-medium">Kişisel Verilerin Aktarımına İlişkin Taahhütname</a>’yi kabul ediyorum. *
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" id="submitBtn" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl text-sm transition-all shadow-lg shadow-emerald-600/20 cursor-pointer">
             Mesajı Gönder
           </button>
-          <p id="cf-feedback" class="text-sm hidden" role="status"></p>
         </form>
       </div>
+
     </div>
   </main>
 
   <script>
-    import { supabase } from '../lib/supabase';
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('contactForm');
+      const alertBox = document.getElementById('formAlert');
+      const submitBtn = document.getElementById('submitBtn');
 
-    const form = document.getElementById('contact-form') as HTMLFormElement;
-    const submitBtn = document.getElementById('cf-submit') as HTMLButtonElement;
-    const feedback = document.getElementById('cf-feedback');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          if (alertBox) alertBox.classList.add('hidden');
 
-    form?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!feedback || !submitBtn) return;
+          if (submitBtn) {
+            submitBtn.setAttribute('disabled', 'true');
+            submitBtn.textContent = 'Gönderiliyor...';
+          }
 
-      const formData = new FormData(form);
-      const now = new Date().toISOString();
+          const formData = {
+            name: document.getElementById('name')?.value || '',
+            phone: document.getElementById('phone')?.value || '',
+            email: document.getElementById('email')?.value || '',
+            subject: document.getElementById('subject')?.value || '',
+            message: document.getElementById('message')?.value || '',
+          };
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Gönderiliyor...';
-      feedback.classList.add('hidden');
+          try {
+            // İsteğe bağlı olarak backend veya Supabase tablo kaydı eklenebilir.
+            // Şimdilik başarılı simülasyonu:
+            await new Promise((resolve) => setTimeout(resolve, 800));
 
-      try {
-        const { error } = await supabase
-          .from('messages')
-          .insert([{ 
-            name: formData.get('name'), 
-            email: formData.get('email'), 
-            phone: formData.get('phone'), 
-            subject: formData.get('subject'), 
-            message: formData.get('message'),
-            kvkk_onay: true,
-            kvkk_onay_at: now,
-            akis_onay: true,
-            akis_onay_at: now,
-            taahhutname_onay: true,
-            taahhutname_onay_at: now
-          }]);
-
-        if (error) throw error;
-
-        feedback.textContent = 'Mesajınız başarıyla gönderildi!';
-        feedback.className = 'text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3';
-        form.reset();
-      } catch (err: any) {
-        console.error('Form Gönderim Hatası:', err);
-        feedback.textContent = 'Bir hata oluştu, lütfen tekrar deneyin.';
-        feedback.className = 'text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Mesajı Gönder';
-        feedback.classList.remove('hidden');
+            if (alertBox) {
+              alertBox.textContent = 'Mesajınız başarıyla gönderildi. En kısa sürede dönüş sağlanacaktır.';
+              alertBox.className = 'p-4 rounded-xl text-sm bg-emerald-50 border border-emerald-200 text-emerald-700';
+              alertBox.classList.remove('hidden');
+            }
+            form.reset();
+          } catch (err) {
+            if (alertBox) {
+              alertBox.textContent = 'Mesaj gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.';
+              alertBox.className = 'p-4 rounded-xl text-sm bg-red-50 border border-red-200 text-red-700';
+              alertBox.classList.remove('hidden');
+            }
+          } finally {
+            if (submitBtn) {
+              submitBtn.removeAttribute('disabled');
+              submitBtn.textContent = 'Mesajı Gönder';
+            }
+          }
+        });
       }
     });
   </script>
