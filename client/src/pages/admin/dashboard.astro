@@ -13,6 +13,8 @@ import { supabase } from '../../lib/supabase';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>İçerik Yönetimi | Samet Can Tulum</title>
     <meta name="robots" content="noindex, nofollow" />
+    <!-- TinyMCE Zengin Metin Editörü CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
   </head>
   <body class="bg-slate-900 text-slate-100 min-h-screen p-6 font-sans">
 
@@ -77,8 +79,8 @@ import { supabase } from '../../lib/supabase';
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-slate-400 mb-1">İçerik (Markdown/Metin)</label>
-              <textarea id="content" rows="5" required placeholder="Yazı detayları..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100"></textarea>
+              <label class="block text-xs font-medium text-slate-400 mb-1">İçerik (Zengin Metin Editörü)</label>
+              <textarea id="content" rows="8" placeholder="Yazı detayları..."></textarea>
             </div>
 
             <button type="submit" id="saveBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg text-sm transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
@@ -115,7 +117,7 @@ import { supabase } from '../../lib/supabase';
       </div>
     </div>
 
-    <!-- Client-side Script (Supabase Doğrudan Entegrasyon) -->
+    <!-- Client-side Script (Supabase & TinyMCE Entegrasyon) -->
     <script type="module">
       import { supabase } from '../../lib/supabase';
       let globalPosts = [];
@@ -123,6 +125,16 @@ import { supabase } from '../../lib/supabase';
       document.addEventListener('DOMContentLoaded', async () => {
         const loader = document.getElementById('auth-guard-loader');
         const mainContent = document.getElementById('admin-main-content');
+
+        // TinyMCE Editör Kurulumu
+        tinymce.init({
+          selector: '#content',
+          height: 350,
+          menubar: false,
+          plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table code help wordcount',
+          toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+        });
 
         // Supabase oturum kontrolü
         try {
@@ -132,7 +144,6 @@ import { supabase } from '../../lib/supabase';
             throw new Error('Oturum geçersiz');
           }
 
-          // Oturum geçerli -> Perdeyi kaldır ve paneli göster
           if (loader) {
             loader.style.opacity = '0';
             setTimeout(() => loader.remove(), 300);
@@ -141,7 +152,6 @@ import { supabase } from '../../lib/supabase';
             mainContent.style.opacity = '1';
           }
 
-          // Verileri yükle
           loadPosts();
 
         } catch (err) {
@@ -202,6 +212,11 @@ import { supabase } from '../../lib/supabase';
           if (saveBtn) saveBtn.textContent = 'Yayınla';
           if (cancelBtn) cancelBtn.classList.add('hidden');
           if (statusDiv) statusDiv.classList.add('hidden');
+
+          // TinyMCE içeriğini temizle
+          if (tinymce.get('content')) {
+            tinymce.get('content').setContent('');
+          }
         }
 
         async function loadPosts() {
@@ -276,7 +291,11 @@ import { supabase } from '../../lib/supabase';
                   document.getElementById('slug').value = post.slug || '';
                   document.getElementById('category').value = post.category || '';
                   document.getElementById('excerpt').value = post.excerpt || '';
-                  document.getElementById('content').value = post.content || '';
+                  
+                  // TinyMCE editörüne veriyi aktar
+                  if (tinymce.get('content')) {
+                    tinymce.get('content').setContent(post.content || '');
+                  }
 
                   document.getElementById('formTitle').textContent = 'Yazıyı Düzenle';
                   document.getElementById('saveBtn').textContent = 'Güncelle';
@@ -348,13 +367,16 @@ import { supabase } from '../../lib/supabase';
             e.preventDefault();
             if (statusDiv) statusDiv.classList.add('hidden');
 
+            // TinyMCE editöründen güncel HTML içeriğini al
+            const contentVal = tinymce.get('content') ? tinymce.get('content').getContent() : '';
+
             const editId = document.getElementById('editPostId').value;
             const postData = {
               title: document.getElementById('title')?.value || '',
               slug: document.getElementById('slug')?.value || '',
               category: document.getElementById('category')?.value || '',
               excerpt: document.getElementById('excerpt')?.value || '',
-              content: document.getElementById('content')?.value || '',
+              content: contentVal,
             };
 
             try {
