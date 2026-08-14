@@ -4,7 +4,7 @@ export const prerender = false;
 
 import Layout from '../../layouts/Layout.astro';
 import { supabase } from '../../lib/supabase';
-import YasalUyari from '../../components/YasalUyari.astro'; //
+import YasalUyari from '../../components/YasalUyari.astro'; 
 
 const { slug } = Astro.params;
 
@@ -81,12 +81,6 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
               <span class={`px-3 py-1 font-bold rounded-lg border ${getCategoryLabel(post.category).style}`}>
                 {getCategoryLabel(post.category).title}
               </span>
-              <time class="text-slate-400 font-medium">
-                {post.created_at 
-                  ? new Date(post.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
-                  : ''
-                }
-              </time>
             </div>
 
             <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
