@@ -205,9 +205,6 @@ function getCategoryUrl(categoryKey: string) {
                   >
                     {getCategoryLabel(post.category)}
                   </a>
-                  <time class="text-slate-400 text-[11px]">
-                    {post.created_at ? new Date(post.created_at).toLocaleDateString('tr-TR') : ''}
-                  </time>
                 </div>
                 <h3 class="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors mb-2 text-sm line-clamp-2">
                   <a href={`/yayinlar/${post.slug}`}>
