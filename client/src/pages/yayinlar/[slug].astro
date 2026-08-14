@@ -43,7 +43,10 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
 }
 ---
 
-<Layout title={post ? `${post.title} | Samet Can Tulum - SMMM` : 'Yazı Bulunamadı'}>
+<Layout 
+  title={post ? `${post.title} | Samet Can Tulum - SMMM` : 'Yazı Bulunamadı'}
+  description={post ? post.excerpt : 'Samet Can Tulum - SMMM Yayınları ve Makaleleri'}
+>
   <main class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto space-y-8">
       
