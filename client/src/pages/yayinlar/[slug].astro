@@ -96,9 +96,8 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
             )}
           </header>
 
-          <!-- İçerik Metni -->
-          <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 whitespace-pre-line text-base sm:text-lg">
-            {post.content}
+          <!-- İçerik Alanı (HTML Olarak Render Edilir) -->
+          <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 text-base sm:text-lg" set:html={post.content}>
           </div>
 
         </article>
