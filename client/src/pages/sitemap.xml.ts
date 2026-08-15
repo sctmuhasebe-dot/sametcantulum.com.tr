@@ -21,16 +21,16 @@ export const GET: APIRoute = async () => {
     'hakkimda',
     'hizmetler',
     'hizmetler/mali-musavirlik',
-    "hizmetler/vergi-danismanligi"
-    "hizmetler/sirket-kurulusu"
-    "hizmetler/sgk-ve-bordro"
-    "sektorel-cozumler/e-ticaret-ve-pazaryerleri"
-    "sektorel-cozumler/yazilim-ve-teknoloji"
-    "sektorel-cozumler/insaat-ve-gayrimenkul"
-    "sektorel-cozumler/turizm-ve-otelcilik"
-    "pratik-araclar/net-brut-maas"
-    "pratik-araclar/kidem-ihbar-tazminati"
-    "pratik-araclar/gecikme-zammi"
+    "hizmetler/vergi-danismanligi",
+    "hizmetler/sirket-kurulusu",
+    "hizmetler/sgk-ve-bordro",
+    "sektorel-cozumler/e-ticaret-ve-pazaryerleri",
+    "sektorel-cozumler/yazilim-ve-teknoloji",
+    "sektorel-cozumler/insaat-ve-gayrimenkul",
+    "sektorel-cozumler/turizm-ve-otelcilik",
+    "pratik-araclar/net-brut-maas",
+    "pratik-araclar/kidem-ihbar-tazminati",
+    "pratik-araclar/gecikme-zammi",
     'iletisim',
     'yayinlar'
   ];
