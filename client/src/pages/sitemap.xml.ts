@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 export const GET: APIRoute = async () => {
   const siteUrl = 'https://www.sametcantulum.com.tr';
   
-  // 1. Tablonuzdan slug ve updated_at değerlerini çekiyoruz
+  // 1. Supabase veritabanından blog yazılarını çekiyoruz
   const { data: posts, error } = await supabase
     .from('posts')
     .select('slug, updated_at');
@@ -15,27 +15,32 @@ export const GET: APIRoute = async () => {
 
   const postList = posts || [];
 
-  // 2. Statik sayfalarınız
-  const staticPages = [
-    '',
-    'hakkimda',
-    'hizmetler',
-    'hizmetler/mali-musavirlik',
-    "hizmetler/vergi-danismanligi",
-    "hizmetler/sirket-kurulusu",
-    "hizmetler/sgk-ve-bordro",
-    "sektorel-cozumler/e-ticaret-ve-pazaryerleri",
-    "sektorel-cozumler/yazilim-ve-teknoloji",
-    "sektorel-cozumler/insaat-ve-gayrimenkul",
-    "sektorel-cozumler/turizm-ve-otelcilik",
-    "pratik-araclar/net-brut-maas",
-    "pratik-araclar/kidem-ihbar-tazminati",
-    "pratik-araclar/gecikme-zammi",
-    'iletisim',
-    'yayinlar'
-  ];
+  // 2. src/pages dizinindeki tüm .astro dosyalarını otomatik tarıyoruz
+  const pageFiles = import.meta.glob('./**/*.astro');
+  
+  const staticPages = Object.keys(pageFiles)
+    .map((filePath) => {
+      let route = filePath
+        .replace('./', '')
+        .replace('.astro', '');
+      
+      if (route === 'index') return '';
+      return route;
+    })
+    .filter((route) => {
+      // Admin paneli, dinamik rotalar, 404 ve API uç noktalarını sitemap dışı bırakıyoruz
+      if (
+        route.startsWith('admin') || 
+        route.includes('[') || 
+        route === '404' ||
+        route.includes('api/')
+      ) {
+        return false;
+      }
+      return true;
+    });
 
-  // 3. XML oluşturma
+  // 3. XML içeriğini dinamik olarak oluşturuyoruz
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${staticPages.map(page => `
