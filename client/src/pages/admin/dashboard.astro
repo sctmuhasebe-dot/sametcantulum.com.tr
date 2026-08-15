@@ -1,10 +1,10 @@
 ---
 // client/src/pages/admin/dashboard.astro
-export const prerender = false; // SSR modunda çalıştığını garanti eder
+export const prerender = false;
 
-// Global CSS / Tailwind dosyanızın yolunu doğrulayıp import edin
 import '../../styles/global.css';
 import { supabase } from '../../lib/supabase';
+import { slugify } from '../../lib/utils';
 ---
 
 <html lang="tr">
@@ -117,9 +117,11 @@ import { supabase } from '../../lib/supabase';
       </div>
     </div>
 
-    <!-- Client-side Script (Supabase & TinyMCE Entegrasyon) -->
+    <!-- Client-side Script (Supabase, TinyMCE & Merkezi slugify Entegrasyonu) -->
     <script type="module">
       import { supabase } from '../../lib/supabase';
+      import { slugify } from '../../lib/utils';
+      
       let globalPosts = [];
 
       document.addEventListener('DOMContentLoaded', async () => {
@@ -292,7 +294,6 @@ import { supabase } from '../../lib/supabase';
                   document.getElementById('category').value = post.category || '';
                   document.getElementById('excerpt').value = post.excerpt || '';
                   
-                  // TinyMCE editörüne veriyi aktar
                   if (tinymce.get('content')) {
                     tinymce.get('content').setContent(post.content || '');
                   }
@@ -349,12 +350,7 @@ import { supabase } from '../../lib/supabase';
             const titleVal = e.target.value;
             const slugInput = document.getElementById('slug');
             if (slugInput) {
-              slugInput.value = titleVal
-                .toLowerCase()
-                .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-                .replace(/[^a-z0-9 -]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-');
+              slugInput.value = slugify(titleVal);
             }
           });
         }
@@ -367,10 +363,9 @@ import { supabase } from '../../lib/supabase';
             e.preventDefault();
             if (statusDiv) statusDiv.classList.add('hidden');
 
-            // TinyMCE editöründen güncel HTML içeriğini al
             const contentVal = tinymce.get('content') ? tinymce.get('content').getContent() : '';
-
             const editId = document.getElementById('editPostId').value;
+            
             const postData = {
               title: document.getElementById('title')?.value || '',
               slug: document.getElementById('slug')?.value || '',
