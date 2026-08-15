@@ -196,7 +196,8 @@ try {
 
       const formData = new FormData(form);
       const name = formData.get('name');
-      const email = formData.get('email');
+      const emailRaw = formData.get('email');
+      const email = typeof emailRaw === 'string' ? emailRaw.trim().toLowerCase() : '';
       const phone = formData.get('phone');
       const subject = formData.get('subject');
       const message = formData.get('message');
