@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "isomorphic-dompurify": "^3.22.0"
+    "isomorphic-dompurify": "^3.22.0",
+    "sanitize-html": "^2.17.7"
+  },
+  "devDependencies": {
+    "@types/sanitize-html": "^2.16.1"
   }
 }
