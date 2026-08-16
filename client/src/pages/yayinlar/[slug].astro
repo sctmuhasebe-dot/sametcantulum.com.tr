@@ -5,7 +5,6 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import { supabase } from '../../lib/supabase';
 import YasalUyari from '../../components/YasalUyari.astro'; 
-// JSDOM yerine sunucu uyumlu isomorphic-dompurify kullanıyoruz
 import DOMPurify from 'isomorphic-dompurify';
 
 const { slug } = Astro.params;
@@ -39,7 +38,7 @@ try {
   error = err.message || `Veritabanından yazı çekilemedi. Aranan slug: "${slug}"`;
 }
 
-// Güvenli HTML Temizliği (JSDOM gerektirmez, doğrudan sunucuda çalışır)
+// Güvenli HTML Temizliği (Sunucu ve Vercel Uyumlu)
 let cleanContent = '';
 if (post && post.content) {
   cleanContent = DOMPurify.sanitize(post.content);
