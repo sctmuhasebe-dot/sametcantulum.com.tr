@@ -1,0 +1,30 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Navbar'daki veriyi merkezi bir dosyadan alıyorsanız orayı import edin
+const pratikAraclar = [
+  { href: "/pratik-araclar/net-brut-maas", icon: "🧮", title: "Net - Brüt Maaş", desc: "Maaş hesaplamalarınızı hızlıca yapın." },
+  { href: "/pratik-araclar/kidem-ihbar-tazminati", icon: "📜", title: "Kıdem ve İhbar Tazminati", desc: "Tazminat süreçlerini mevzuata uygun hesaplayın." },
+  { href: "/pratik-araclar/gecikme-zammi", icon: "⏱️", title: "Vergi Gecikme Zammı", desc: "Vergi gecikme zammı hesaplamaları." },
+  { href: "/pratik-araclar/faydali-linkler", icon: "🔗", title: "Faydalı Linkler", desc: "Mali müşavirlik için önemli kaynaklar." },
+];
+---
+
+<Layout title="Pratik Araçlar | Samet Can Tulum" description="İşletmenizin mali süreçlerini kolaylaştıracak pratik hesaplama araçları.">
+  <main class="min-h-screen py-16 px-4 max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-slate-900 mb-8">Pratik Araçlar</h1>
+    <p class="text-slate-600 mb-12">İşletmenizin finansal ve yasal süreçlerini yönetirken kullanabileceğiniz pratik hesaplama araçları ve faydalı kaynaklara aşağıdan ulaşabilirsiniz.</p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      {pratikAraclar.map((tool) => (
+        <a href={tool.href} class="p-6 rounded-2xl bg-white border border-slate-200 hover:border-emerald-500 transition-all shadow-sm hover:shadow-md flex items-start gap-4">
+          <span class="text-3xl">{tool.icon}</span>
+          <div>
+            <h2 class="font-bold text-slate-900">{tool.title}</h2>
+            <p class="text-sm text-slate-500 mt-1">{tool.desc}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </main>
+</Layout>
