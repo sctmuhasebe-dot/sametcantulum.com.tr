@@ -50,7 +50,10 @@ function getCategoryDetails(key: string) {
 const currentCat = getCategoryDetails(category || '');
 ---
 
-<Layout title={`${currentCat.title} | Samet Can Tulum - SMMM`}>
+<Layout 
+  title={`${currentCat.title.replace(/[\u{1F000}-\u{1F9FF}]/gu, '').trim()} | Samet Can Tulum - SMMM`} 
+  description={`${currentCat.desc} Antalya mali müşavirlik ve vergi danışmanlığı güncel yayınları.`}
+>
   <main class="bg-slate-50 min-h-screen py-12 lg:py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
       
