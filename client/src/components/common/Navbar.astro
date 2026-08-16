@@ -14,7 +14,6 @@ const menuGroups = [
   },
   {
     label: "Pratik Araçlar",
-    // href kaldırıldı, çünkü bu sadece bir açılır menü başlığı olacak
     items: [
       { href: "/pratik-araclar/net-brut-maas", icon: "🧮", title: "Net - Brüt Maaş" },
       { href: "/pratik-araclar/kidem-ihbar-tazminati", icon: "📜", title: "Kıdem ve İhbar Tazminati" },
@@ -85,7 +84,7 @@ const menuGroups = [
 
       <!-- Mobil Menü Butonu -->
       <button id="mobile-menu-button" type="button" class="lg:hidden p-2 text-ink-300 hover:bg-ink-800 rounded-lg">
-        <svg id="icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
       </button>
     </div>
   </div>
@@ -111,3 +110,26 @@ const menuGroups = [
     </div>
   </div>
 </header>
+
+<script>
+  // Mobil Menü Aç/Kapat
+  const btn = document.getElementById('mobile-menu-button');
+  const menu = document.getElementById('mobile-menu');
+
+  if (btn && menu) {
+    btn.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+    });
+  }
+
+  // Mobil Akordiyon (Alt menüleri aç/kapat)
+  const triggers = document.querySelectorAll('.mobile-accordion-trigger');
+  triggers.forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      const submenu = trigger.nextElementSibling;
+      if (submenu) {
+        submenu.classList.toggle('hidden');
+      }
+    });
+  });
+</script>
