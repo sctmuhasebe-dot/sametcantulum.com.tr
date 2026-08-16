@@ -5,7 +5,6 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import { supabase } from '../../lib/supabase';
 import YasalUyari from '../../components/YasalUyari.astro'; 
-import sanitizeHtml from 'sanitize-html';
 
 const { slug } = Astro.params;
 
@@ -36,18 +35,6 @@ try {
   Astro.response.status = 500;
   console.error('Yazı detayı çekilirken hata:', err);
   error = err.message || `Veritabanından yazı çekilemedi. Aranan slug: "${slug}"`;
-}
-
-// Güvenli HTML Temizliği (sanitize-html ile Vercel uyumlu)
-let cleanContent = '';
-if (post && post.content) {
-  cleanContent = sanitizeHtml(post.content, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img', 'iframe', 'h1', 'h2', 'u', 'span' ]),
-    allowedAttributes: {
-      ...sanitizeHtml.defaults.allowedAttributes,
-      '*': ['class', 'style', 'align']
-    }
-  });
 }
 
 function getCategoryLabel(categoryKey: string): { title: string; style: string } {
@@ -114,7 +101,7 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
             )}
           </header>
 
-          <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 text-base sm:text-lg" set:html={cleanContent}>
+          <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 text-base sm:text-lg" set:html={post.content}>
           </div>
 
           <YasalUyari />
