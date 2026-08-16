@@ -6,6 +6,8 @@ export default defineConfig({
   site: 'https://www.sametcantulum.com.tr',
   output: 'server',
   adapter: vercel(),
+  // SEO için canonical ve URL tutarlılığını sağlamak amacıyla eklenen ayar:
+  trailingSlash: 'never',
   integrations: [
     // Eski statik sitemap eklentisi kaldırıldı. 
     // Artık dinamik sitemap.xml endpoint'imiz devrede.
