@@ -100,37 +100,41 @@ const {
     </script>
 
     <!-- Google Analytics (GA4) & Çerez İzin Yönetimi -->
-    <script is:inline>
-      function loadGoogleAnalytics(trackingId) {
-        if (window.gaLoaded) return;
-        window.gaLoaded = true;
+      <script is:inline>
+        function loadGoogleAnalytics(trackingId) {
+          if (window.gaLoaded) return;
+          window.gaLoaded = true;
 
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = `https://www.googletagmanager.com/gtag/js?id=${trackingId}`;
-        document.head.appendChild(script);
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = `https://www.googletagmanager.com/gtag/js?id=${trackingId}`;
+          document.head.appendChild(script);
 
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){ dataLayer.push(arguments); }
-        window.gtag = gtag;
-        
-        gtag('js', new Date());
-        gtag('config', trackingId);
-      }
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){ dataLayer.push(arguments); }
+          window.gtag = gtag;
+          
+          gtag('js', new Date());
+          gtag('config', trackingId);
+        }
 
-      const GA_TRACKING_ID = 'G-6HD4056JVK'; 
+        const GA_TRACKING_ID = 'G-6HD4056JVK'; 
 
-      const consent = localStorage.getItem('cookie_consent');
-      if (consent === 'accepted') {
-        loadGoogleAnalytics(GA_TRACKING_ID);
-      }
-
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'cookie_consent' && e.newValue === 'accepted') {
+        const consent = localStorage.getItem('cookie_consent');
+        if (consent === 'accepted') {
           loadGoogleAnalytics(GA_TRACKING_ID);
         }
-      });
-    </script>
+
+        window.addEventListener('storage', (e) => {
+          if (e.key === 'cookie_consent' && e.newValue === 'accepted') {
+            loadGoogleAnalytics(GA_TRACKING_ID);
+          }
+        });
+
+        window.addEventListener('cookie-consent-accepted', () => {
+          loadGoogleAnalytics(GA_TRACKING_ID);
+        });
+      </script>
   </head>
   
   <body class="bg-ink-50 text-ink-900 font-sans min-h-screen flex flex-col">
