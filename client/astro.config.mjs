@@ -4,11 +4,10 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: 'https://www.sametcantulum.com.tr',
-  // SSR'dan Hibrit modele geçiyoruz: Statik sayfalar hızlanacak, 
-  // dinamik olanlar sunucuda çalışmaya devam edecek.
-  output: 'hybrid', 
+  // Astro'nun güncel sürümünde 'hybrid' kaldırıldığı için 'static' kullanıyoruz.
+  // Bu ayar, sayfa bazlı SSR (prerender = false) kullanımını zaten destekler.
+  output: 'static', 
   adapter: vercel(),
-  // URL tutarlılığı için trailingSlash ayarını burada sabitliyoruz.
   trailingSlash: 'never',
   integrations: [],
   vite: {
