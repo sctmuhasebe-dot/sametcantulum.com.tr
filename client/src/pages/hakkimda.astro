@@ -1,6 +1,7 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 
 const uzmanlikAlanlari = [
   { icon: "💼", title: "Mali Müşavirlik & Muhasebe", desc: "Vergi beyannameleri, bildirgeler ve yasal mevzuat uyum süreçleri." },
@@ -14,6 +15,12 @@ const uzmanlikAlanlari = [
   title="Hakkımda | Samet Can Tulum - SMMM" 
   description="2018 yılından bu yana mali müşavirlik ve finansal danışmanlık alanında edindiğim tecrübe, çalışma ilkelerim, vizyonum ve SSS."
 >
+<!-- 2. Bileşeni Sayfada Çağırma -->
+  <Breadcrumbs items={[
+    { name: "Anasayfa", url: "/" },
+    { name: "Hakkımda", url: "/hakkimda" }
+  ]} />
+  
   <!-- SAYFA İÇİ GEZİNTİ MENÜSÜ (Sticky - Main Dışında) -->
   <nav class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-200 z-40 py-3.5 shadow-sm">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap gap-6 text-sm font-semibold text-slate-600 justify-center sm:justify-start">
