@@ -37,6 +37,34 @@ try {
   error = err.message || `Veritabanından yazı çekilemedi. Aranan slug: "${slug}"`;
 }
 
+// JSON-LD Şeması Oluşturma (Görünmez SEO Bilgisi)
+let articleSchema = null;
+if (post) {
+  articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.excerpt,
+    "author": {
+      "@type": "Person",
+      "name": "Samet Can Tulum",
+      "jobTitle": "SMMM",
+      "url": "https://www.sametcantulum.com.tr"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Samet Can Tulum SMMM",
+      "url": "https://www.sametcantulum.com.tr"
+    },
+    "datePublished": post.created_at,
+    "dateModified": post.updated_at || post.created_at,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://www.sametcantulum.com.tr/yayinlar/${slug}`
+    }
+  };
+}
+
 function getCategoryLabel(categoryKey: string): { title: string; style: string } {
   switch (categoryKey?.toLowerCase()) {
     case 'mevzuat':
@@ -58,6 +86,10 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
   type="article"
   publishedTime={post?.created_at}
 >
+  {post && (
+    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+  )}
+
   <main class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto space-y-8">
       
