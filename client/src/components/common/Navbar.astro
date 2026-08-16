@@ -134,7 +134,7 @@ const menuGroups = [
 
   // Mobil Akordiyon (Alt menüleri aç/kapat)
   const triggers = document.querySelectorAll('.mobile-accordion-trigger');
-  triggers.ghi = triggers.forEach((trigger) => {
+  triggers.forEach((trigger) => {
     trigger.addEventListener('click', () => {
       const submenu = trigger.nextElementSibling;
       if (submenu) {
