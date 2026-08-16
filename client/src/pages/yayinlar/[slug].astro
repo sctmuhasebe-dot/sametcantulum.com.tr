@@ -15,16 +15,16 @@ let error: string | null = null;
 
 try {
   if (slug) {
+    // .single() yerine .maybeSingle() kullanarak kayıt bulunamadığında sunucu çökmesini önlüyoruz
     const { data, error: dbError } = await supabase
       .from('posts')
       .select('*')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (dbError) throw dbError;
     
     if (!data) {
-      // Eğer Supabase'den kayıt dönmezse 404 durum kodu ata
       Astro.response.status = 404;
       error = 'Aradığınız yayın bulunamadı.';
     } else {
@@ -35,8 +35,7 @@ try {
     error = 'Geçersiz yazı bağlantısı (Slug bulunamadı).';
   }
 } catch (err: any) {
-  // Veritabanı sorgu hatası veya kayıt bulunamadı durumlarında 404 dön
-  Astro.response.status = 404;
+  Astro.response.status = 500;
   console.error('Yazı detayı çekilirken hata:', err);
   error = err.message || `Veritabanından yazı çekilemedi. Aranan slug: "${slug}"`;
 }
