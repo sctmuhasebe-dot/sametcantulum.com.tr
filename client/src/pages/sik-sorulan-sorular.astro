@@ -1,0 +1,22 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Sıkça Sorulan Sorular | Samet Can Tulum" description="Mali süreçler ve çalışma modelimiz hakkında sıkça sorulanlar.">
+  <main class="min-h-screen py-16 max-w-3xl mx-auto px-4">
+    <h1 class="text-3xl font-bold text-slate-900 mb-10 text-center">Sıkça Sorulan Sorular</h1>
+    <div class="space-y-4">
+      {[
+        { q: "Mali müşavirlik hizmeti işletmeme ne tür avantajlar sağlar?", a: "Yasal yükümlülüklerinizi hatasız yerine getirerek cezaları önler, teşviklerden faydalanmanızı sağlar." },
+        { q: "Süreçler ve evrak takibi nasıl yürütülüyor?", a: "e-Fatura, e-Defter ve dijital muhasebe entegrasyonları ile süreçleri tamamen dijital yönetiyoruz." },
+        { q: "Şirket kuruluşu ne kadar sürer?", a: "Şahıs şirketleri aynı gün, Ltd. ve A.Ş. süreçleri ise 2-3 iş gününde tamamlanır." }
+      ].map((item) => (
+        <details class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <summary class="font-bold cursor-pointer text-slate-900 flex justify-between items-center">{item.q}</summary>
+          <p class="mt-4 text-slate-600 pt-4 border-t border-slate-100">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </main>
+</Layout>
