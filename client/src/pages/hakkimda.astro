@@ -10,83 +10,236 @@ const uzmanlikAlanlari = [
 ];
 ---
 
-<Layout title="Hakkımda | Samet Can Tulum - SMMM" description="Hakkımda, vizyonum, misyonum ve çalışma prensiplerim hakkında bilgiler.">
-  <main class="bg-slate-50 text-slate-800 min-h-screen pt-20">
+<Layout 
+  title="Hakkımda | Samet Can Tulum - SMMM" 
+  description="2018 yılından bu yana mali müşavirlik ve finansal danışmanlık alanında edindiğim tecrübe, çalışma ilkelerim, vizyonum ve SSS."
+>
+  <!-- SAYFA İÇİ GEZİNTİ MENÜSÜ (Sticky - Main Dışında) -->
+  <nav class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-200 z-40 py-3.5 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap gap-6 text-sm font-semibold text-slate-600 justify-center sm:justify-start">
+      <a href="#hakkimda" class="hover:text-emerald-700 transition-colors">Hakkımda</a>
+      <a href="#ilkeler" class="hover:text-emerald-700 transition-colors">İlkelerim</a>
+      <a href="#vizyon" class="hover:text-emerald-700 transition-colors">Vizyon & Misyon</a>
+      <a href="#sss" class="hover:text-emerald-700 transition-colors">Sıkça Sorulan Sorular</a>
+    </div>
+  </nav>
 
-    <!-- SABİT MENÜ -->
-    <nav class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-slate-200 z-50 py-4 shadow-sm">
-      <div class="max-w-5xl mx-auto px-4 flex flex-wrap gap-4 text-sm font-semibold text-slate-600 justify-center sm:justify-start">
-        <a href="#hakkimda" class="hover:text-emerald-700">Hakkımda</a>
-        <a href="#ilkeler" class="hover:text-emerald-700">İlkelerim</a>
-        <a href="#vizyon" class="hover:text-emerald-700">Vizyon & Misyon</a>
-        <a href="#sss" class="hover:text-emerald-700">SSS</a>
-      </div>
-    </nav>
+  <main class="bg-slate-50 text-slate-800 min-h-screen">
 
     <!-- HEADER / HERO -->
-    <section id="hakkimda" class="bg-white py-16">
-      <div class="max-w-5xl mx-auto px-4">
-        <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 mb-6">Samet Can TULUM <br /> <span class="text-emerald-600">SMMM</span></h1>
-        <p class="text-slate-600 text-lg leading-relaxed max-w-3xl text-justify mb-6">
+    <section id="hakkimda" class="bg-white border-b border-slate-200 py-16 lg:py-20">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-6">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          Serbest Muhasebeci Mali Müşavir
+        </div>
+        
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
+          Samet Can TULUM <br />
+          <span class="text-emerald-600">SMMM</span>
+        </h1>
+        
+        <p class="text-slate-600 text-base sm:text-lg leading-relaxed max-w-3xl text-justify hyphens-auto mb-6" lang="tr">
           2011 yılında Pamukkale Üniversitesi İşletme Bölümü’nde başlayan akademik yolculuğumu; finans, yönetim ve ekonomi alanlarında aldığım güçlü altyapıyla tamamladım. Farklı sektörlerdeki saha tecrübelerim sayesinde mesleki yabancı dil yetkinliğimi ve pratik iletişim becerilerimi geliştirme fırsatı buldum. 2018 yılında adım attığım mali müşavirlik sektöründe, edindiğim tecrübe ve staj sürecimin ardından 2022 yılı itibarıyla Serbest Muhasebeci Mali Müşavir (SMMM) olarak bağımsız mesleki faaliyetlerime başladım.
+
+
 
         </p>
 
 
 
+
+
+
+
         <p class="text-slate-600 text-base sm:text-lg leading-relaxed max-w-3xl text-justify hyphens-auto" lang="tr">
+
+
 
           Benim için mali müşavirlik, yalnızca geçmiş döneme ait finansal verileri kayıt altına almak değil; işletmelerin geleceğe yönelik sürdürülebilir büyüme stratejilerini inşa etmektir. Bu doğrultuda hizmet anlayışımı veri odaklılık, şeffaflık ve teknolojiyle entegre çözümler temeli üzerine kurguluyorum.
         </p>
       </div>
     </section>
 
-    <!-- İLKELERİM -->
-    <section id="ilkeler" class="py-16 max-w-5xl mx-auto px-4 grid md:grid-cols-12 gap-12">
-      <div class="md:col-span-7 space-y-6">
-        <h2 class="text-2xl font-bold text-slate-900 border-b pb-3">Yaklaşımım ve Çalışma İlkelerim</h2>
-        <p><b>Veri Odaklılık:</b> Finansal verileri stratejik büyüme kararlarına dönüştürüyorum.</p>
-        <p><b>Uluslararası Destek:</b> İngilizce dil yetkinliğimle yabancı ortaklı firmalara özel süreç yönetimi sunuyorum.</p>
-        <p><b>Dijital Entegrasyon:</b> Zaman ve kaynak verimliliği için dijital araçları merkezde tutuyorum.</p>
-      </div>
-      <div class="md:col-span-5 bg-white p-6 rounded-2xl border shadow-sm">
-        <h3 class="font-bold mb-4">SMMM İlkeleri</h3>
-        <ul class="space-y-3 text-sm text-slate-600">
-          <li>🔒 Dürüstlük ve Gizlilik</li>
-          <li>⚡ E-Dönüşüm Odaklılık</li>
-          <li>📊 Proaktif Mevzuat Takibi</li>
-        </ul>
+    <!-- BİYOGRAFİ VE MİSYON / İLKELER -->
+    <section id="ilkeler" class="py-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+        
+        <!-- Sol Biyografi & İlkeler Kartı -->
+        <div class="md:col-span-7 space-y-6 text-slate-700 text-sm sm:text-base leading-relaxed">
+          <h2 class="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-3">
+            Yaklaşımım ve Çalışma İlkelerim
+          </h2>
+          
+          <p class="text-slate-600 text-base leading-relaxed text-justify hyphens-auto" lang="tr">
+            <b>Veri Odaklı Süreç Yönetimi:</b> Finansal tablolar, yalnızca yasal ve mevzuat zorunlulukları çerçevesinde değil; işletmelerin stratejik kararlarına altyapı oluşturacak veriler bütünü olarak değerlendirilmektedir.
+          </p>
+          
+          <p class="text-slate-600 text-base leading-relaxed text-justify hyphens-auto" lang="tr">
+            <b>Uluslararası İletişim ve Süreç Takibi:</b> İngilizce dil hakimiyeti ile yabancı ortaklı işletmelerin veya uluslararası pazarlarla etkileşimde bulunan firmaların finansal ve mevzuat süreçlerine uyum desteği sunulmaktadır.
+          </p>
+
+          <p class="text-slate-600 text-base leading-relaxed text-justify hyphens-auto" lang="tr">
+            <b>Dijital Entegrasyon:</b> Mükelleflerin finansal ve operasyonel süreçlerinde güncel dijital araçların kullanımını teşvik ederek, süreçlerde zaman ve kaynak verimliliği amaçlanmaktadır.
+          </p>
+          
+          <p class="text-slate-600 text-base leading-relaxed text-justify hyphens-auto" lang="tr">
+            <b>Mevzuat ve Risk Yönetimi:</b> İşletmelerin vergi uyum süreçleri ve risk yönetimi mevzuat çerçevesinde değerlendirilerek finansal sürdürülebilirliğe katkı sağlanmaktadır.
+          </p>
+        </div>
+
+        <!-- Sağ Bilgi & Kurumsal Odak Kutusu -->
+        <div class="md:col-span-5 space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="font-bold text-slate-900 text-sm tracking-wide">
+                Çalışma Prensipleri & Yaklaşım
+              </h3>
+              <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">
+                SMMM İlkeleri
+              </span>
+            </div>
+
+            <div class="space-y-3">
+              <div class="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100/80 flex items-start gap-3">
+                <span class="text-lg leading-none shrink-0 mt-0.5">🔒</span>
+                <div>
+                  <div class="text-xs font-bold text-slate-800">Temel Etik İlkeler</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                    Dürüstlük, Tarafsızlık, Gizlilik, Mesleki Davranış, Mesleki Yeterlilik ve Özen
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100/80 flex items-start gap-3">
+                <span class="text-lg leading-none shrink-0 mt-0.5">⚡</span>
+                <div>
+                  <div class="text-xs font-bold text-slate-800">E-Dönüşüm ve Dijital Odak</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                    E-Fatura, e-Defter ve dijital vergi süreçlerinde uçtan uca altyapı yönetimi.
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100/80 flex items-start gap-3">
+                <span class="text-lg leading-none shrink-0 mt-0.5">📊</span>
+                <div>
+                  <div class="text-xs font-bold text-slate-800">Proaktif Mevzuat Takibi</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                    Resmi Gazete, Gelir İdaresi sirkülerleri ve yasal düzenlemeler düzenli analiz edilir.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-1">
+              <a 
+                href="/iletisim" 
+                class="w-full inline-flex justify-center items-center gap-2 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition-all shadow-sm"
+              >
+                <span>İletişim Bilgileri ve Konum</span>
+                <span class="text-slate-400">→</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </section>
 
     <!-- VİZYON & MİSYON -->
     <section id="vizyon" class="py-16 bg-slate-900 text-white">
-      <div class="max-w-5xl mx-auto px-4 grid md:grid-cols-2 gap-12">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12">
         <div>
-          <h2 class="text-2xl font-bold mb-4">Vizyonumuz</h2>
-          <p class="text-slate-300">Finansal süreçleri şeffaf ve erişilebilir kılarak, işletmelerin büyümesine rehberlik eden öncü mali müşavirlik ofisi olmak.</p>
+          <h2 class="text-2xl font-bold mb-4 text-emerald-400">Vizyonumuz</h2>
+          <p class="text-slate-300 text-base leading-relaxed">
+            Dijitalleşen dünyada, finansal süreçleri şeffaf, anlaşılır ve erişilebilir kılarak işletmelerin sürdürülebilir büyümesine rehberlik eden öncü ve yenilikçi bir mali müşavirlik pratiği oluşturmak.
+          </p>
         </div>
         <div>
-          <h2 class="text-2xl font-bold mb-4">Misyonumuz</h2>
-          <p class="text-slate-300">Mükelleflerimize sadece defter tutma değil, işletmelerini bir üst seviyeye taşıyacak stratejik mali danışmanlık sunmak.</p>
+          <h2 class="text-2xl font-bold mb-4 text-emerald-400">Misyonumuz</h2>
+          <p class="text-slate-300 text-base leading-relaxed">
+            Mükelleflerimize yalnızca yasal beyan ve kayıt hizmeti sunmakla kalmayıp; veri odaklı analizler, risk yönetimi ve teknolojik entegrasyonlarla işletmelerini bir adım öne taşıyacak stratejik danışmanlık sunmak.
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- SSS (FAQ) -->
-    <section id="sss" class="py-16 max-w-3xl mx-auto px-4">
-      <h2 class="text-2xl font-bold text-center mb-8">Sıkça Sorulan Sorular</h2>
+    <!-- UZMANLIK ALANLARI -->
+    <section class="py-16 bg-white border-t border-slate-200">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-10 text-left">
+          <h2 class="text-2xl font-bold text-slate-900 mb-2">Uzmanlık ve Hizmet Alanları</h2>
+          <p class="text-slate-600 text-sm">Mükelleflerimize sunduğumuz temel danışmanlık ve operasyonel çözümler.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {uzmanlikAlanlari.map((hizmet) => (
+            <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-emerald-300 transition-all group">
+              <div class="text-3xl mb-4 group-hover:scale-110 transition-transform inline-block">
+                {hizmet.icon}
+              </div>
+              <h3 class="font-bold text-slate-900 text-base mb-2 group-hover:text-emerald-700 transition-colors">
+                {hizmet.title}
+              </h3>
+              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                {hizmet.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- SIKÇA SORULAN SORULAR (SSS) -->
+    <section id="sss" class="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Sıkça Sorulan Sorular</h2>
+        <p class="text-slate-600 text-sm">Mali süreçler ve çalışma modelimiz hakkında merak edilenler.</p>
+      </div>
+
       <div class="space-y-4">
-        <details class="bg-white p-6 rounded-xl border border-slate-200">
-          <summary class="font-bold cursor-pointer">Mali müşavirlik hizmeti ne tür kolaylıklar sağlar?</summary>
-          <p class="mt-4 text-slate-600">İşletmenizin yasal yükümlülüklerini hatasız yöneterek, vergi cezalarından korunmanızı ve teşviklerden yararlanmanızı sağlar.</p>
+        <details class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm group">
+          <summary class="font-bold cursor-pointer text-slate-900 flex justify-between items-center list-none">
+            <span>Mali müşavirlik hizmeti işletmeme ne tür avantajlar sağlar?</span>
+            <span class="text-emerald-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-4 text-slate-600 text-sm sm:text-base leading-relaxed border-t border-slate-100 pt-4">
+            İşletmenizin yasal yükümlülüklerini hatasız ve zamanında yerine getirerek olası vergi cezalarının önüne geçer. Ayrıca faydalanabileceğiniz vergi indirimleri, istisnalar ve SGK teşviklerini analiz ederek maliyet avantajı yaratır.
+          </p>
         </details>
-        <details class="bg-white p-6 rounded-xl border border-slate-200">
-          <summary class="font-bold cursor-pointer">Süreçler dijital ortamda mı yürütülüyor?</summary>
-          <p class="mt-4 text-slate-600">Evet, e-dönüşüm araçları ile tüm süreçlerinizi dijital, hızlı ve şeffaf bir şekilde yönetiyoruz.</p>
+
+        <details class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm group">
+          <summary class="font-bold cursor-pointer text-slate-900 flex justify-between items-center list-none">
+            <span>Süreçler ve evrak takibi nasıl yürütülüyor?</span>
+            <span class="text-emerald-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-4 text-slate-600 text-sm sm:text-base leading-relaxed border-t border-slate-100 pt-4">
+            Geleneksel evrak takibinin yanı sıra e-Fatura, e-Defter ve dijital muhasebe entegrasyonları ile süreçlerimizi tamamen dijital ortamda, hızlı ve şeffaf bir şekilde yönetiyoruz.
+          </p>
+        </details>
+
+        <details class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm group">
+          <summary class="font-bold cursor-pointer text-slate-900 flex justify-between items-center list-none">
+            <span>Şirket kuruluşu ne kadar sürer?</span>
+            <span class="text-emerald-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-4 text-slate-600 text-sm sm:text-base leading-relaxed border-t border-slate-100 pt-4">
+            Şahıs şirketleri gerekli belgelerin tamamlanması halinde genellikle aynı gün içinde kurulabilmektedir. Limited ve Anonim şirketlerin tescil süreçleri ise ortalama 2-3 iş günü içerisinde tamamlanmaktadır.
+          </p>
         </details>
       </div>
     </section>
 
   </main>
 </Layout>
+
+<!-- MENÜ KAYDIRMA İÇİN HİZALAMA AYARI -->
+<style>
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+</style>
