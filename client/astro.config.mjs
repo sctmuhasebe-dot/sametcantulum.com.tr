@@ -4,14 +4,13 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: 'https://www.sametcantulum.com.tr',
-  output: 'server',
+  // SSR'dan Hibrit modele geçiyoruz: Statik sayfalar hızlanacak, 
+  // dinamik olanlar sunucuda çalışmaya devam edecek.
+  output: 'hybrid', 
   adapter: vercel(),
-  // SEO için canonical ve URL tutarlılığını sağlamak amacıyla eklenen ayar:
+  // URL tutarlılığı için trailingSlash ayarını burada sabitliyoruz.
   trailingSlash: 'never',
-  integrations: [
-    // Eski statik sitemap eklentisi kaldırıldı. 
-    // Artık dinamik sitemap.xml endpoint'imiz devrede.
-  ],
+  integrations: [],
   vite: {
     plugins: [tailwindcss()],
   },
