@@ -1,6 +1,4 @@
 ---
-// Navbar Bileşeni (src/components/common/Navbar.astro)
-
 const menuGroups = [
   {
     label: "Hizmetlerimiz",
@@ -56,7 +54,7 @@ const menuGroups = [
 
         {menuGroups.map((group) => (
           <div class="relative group py-5">
-            {group.href ? (
+            {group.href && group.href !== "#" ? (
               <a href={group.href} class="flex items-center gap-1.5 text-ink-300 hover:text-white transition-colors">
                 <span>{group.label}</span>
                 <span class="text-[10px] opacity-70 group-hover:rotate-180 transition-transform duration-200">▼</span>
@@ -87,8 +85,11 @@ const menuGroups = [
       <button
         id="mobile-menu-button"
         type="button"
-        class="lg:hidden p-2 text-ink-300 hover:bg-ink-800 rounded-lg"
-        aria-label="Mobil Menüyü Aç">
+        class="lg:hidden p-2 text-ink-300 hover:bg-ink-800 rounded-lg transition-colors"
+        aria-label="Mobil Menüyü Aç"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
       </button>
     </div>
@@ -105,9 +106,11 @@ const menuGroups = [
             type="button" 
             class="mobile-accordion-trigger w-full flex items-center justify-between px-3 py-3 text-sm font-semibold text-ink-300"
             aria-label={`${group.label} menüsünü aç/kapat`}
+            aria-expanded="false"
+            aria-controls={`mobile-submenu-${i}`}
           >
             <span>{group.label}</span>
-            <span class="text-[10px] opacity-70">▼</span>
+            <span class="text-[10px] opacity-70 transition-transform duration-200">▼</span>
           </button>
           <div id={`mobile-submenu-${i}`} class="mobile-submenu hidden pl-3 pb-1">
             {group.items.map((item: any) => (
@@ -122,24 +125,44 @@ const menuGroups = [
 </header>
 
 <script>
-  // Mobil Menü Aç/Kapat
-  const btn = document.getElementById('mobile-menu-button');
-  const menu = document.getElementById('mobile-menu');
+  function setupNavbar() {
+    const btn = document.getElementById('mobile-menu-button');
+    const menu = document.getElementById('mobile-menu');
 
-  if (btn && menu) {
-    btn.addEventListener('click', () => {
-      menu.classList.toggle('hidden');
+    if (btn && menu) {
+      // Çifte event listener eklenmesini önlemek için clonelama veya kontrol
+      btn.onclick = () => {
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', (!isExpanded).toString());
+        btn.setAttribute('aria-label', isExpanded ? 'Mobil Menüyü Aç' : 'Mobil Menüyü Kapat');
+        menu.classList.toggle('hidden');
+      };
+    }
+
+    // Mobil Akordiyon (Alt menüleri aç/kapat)
+    const triggers = document.querySelectorAll('.mobile-accordion-trigger');
+    triggers.forEach((trigger) => {
+      (trigger as HTMLElement).onclick = () => {
+        const submenu = trigger.nextElementSibling;
+        const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+        
+        trigger.setAttribute('aria-expanded', (!isExpanded).toString());
+        
+        const arrow = trigger.querySelector('span:last-child');
+        if (arrow) {
+          arrow.classList.toggle('rotate-180', !isExpanded);
+        }
+
+        if (submenu) {
+          submenu.classList.toggle('hidden');
+        }
+      };
     });
   }
 
-  // Mobil Akordiyon (Alt menüleri aç/kapat)
-  const triggers = document.querySelectorAll('.mobile-accordion-trigger');
-  triggers.forEach((trigger) => {
-    trigger.addEventListener('click', () => {
-      const submenu = trigger.nextElementSibling;
-      if (submenu) {
-        submenu.classList.toggle('hidden');
-      }
-    });
-  });
+  // İlk yüklemede çalıştır
+  setupNavbar();
+
+  // Astro View Transitions kullanılıyorsa sayfa geçişlerinden sonra da çalıştır
+  document.addEventListener('astro:page-load', setupNavbar);
 </script>
