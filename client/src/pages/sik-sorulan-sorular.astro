@@ -6,6 +6,7 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="Sıkça Sorulan Sorular | Samet Can Tulum" description="Mali süreçler ve çalışma modelimiz hakkında sıkça sorulanlar.">
   <main class="min-h-screen py-16 max-w-3xl mx-auto px-4">
     <h1 class="text-3xl font-bold text-slate-900 mb-10 text-center">Sıkça Sorulan Sorular</h1>
+    
     <div class="space-y-4">
       {[
         { q: "Mali Müşavir tam olarak hangi hizmetleri sunar ve işletmeler için neden zorunludur?", a: "Serbest Muhasebeci Mali Müşavir (SMMM); işletmelerin defterlerini tutan, vergi beyannamelerini hazırlayıp yasal süresi içinde beyan eden, SGK ve İş Kanunu süreçlerini yürüten ve finansal konularda danışmanlık yapan yetkili meslek mensubudur. Şirket kuruluşu, vergi planlaması, e-Fatura/e-Arşiv geçiş süreçleri ve mali mevzuata uyum konularında işletmelere rehberlik eder." },
@@ -14,9 +15,14 @@ import Layout from '../layouts/Layout.astro';
         { q: "Şirket kuruluş işlemlerini tamamlamak kaç gün sürer ve ortalama ne kadar masraf gider?", a: "Şirket türüne göre değişiklik göstermekle birlikte, şahıs şirketleri aynı gün içinde kurulabilir. Limited veya Anonim şirketlerde ise MERSİS başvurusu, ana sözleşme onayı, imza sirküleri ve vergi dairesi yoklama süreçleri dahil olmak üzere ortalama 3 ila 5 iş günü içinde süreç tamamlanır. Kuruluş maliyetleri; noter masrafları, ticaret odası kayıt ücretleri, ana sözleşme ve asgari sermaye gereksinimlerine göre dönemsel olarak güncellenir." },
         { q: "Hiç satış yapmadığım veya zarar ettiğim aylarda devlete vergi öder miyim?", a: "Evet. Şirketiniz kâr etmese bile beyannamelerin damga vergileri, muhasebe ücreti, ticaret ve esnaf odası aidatları ve SGK (Bağ-Kur) primleri gibi sabit maliyetleriniz devam eder. Ayrıca şahıs işletmelerinde geçici vergi dönemlerinde matrah oluşmasa dahi yıllık asgari yükümlülükler ve beyanname damga vergileri tahakkuk eder." }
       ].map((item) => (
-        <details class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <summary class="font-bold cursor-pointer text-slate-900 flex justify-between items-center">{item.q}</summary>
-          <p class="mt-4 text-slate-600 pt-4 border-t border-slate-100">{item.a}</p>
+        <details class="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all duration-300">
+          <summary class="font-bold cursor-pointer text-slate-900 flex justify-between items-center list-none [&::-webkit-details-marker]:hidden text-justify">
+            {item.q}
+            <span class="ml-4 text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-4 text-slate-600 pt-4 border-t border-slate-100 text-justify leading-relaxed">
+            {item.a}
+          </p>
         </details>
       ))}
     </div>
