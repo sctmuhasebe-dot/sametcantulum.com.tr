@@ -24,7 +24,12 @@ export const GET: APIRoute = async () => {
         .replace('./', '')
         .replace('.astro', '');
       
+      // Ana dizin index'i kök adres yapması için boş bırakıyoruz
       if (route === 'index') return '';
+      
+      // Alt dizinlerdeki index dosyalarını temizliyoruz (örn: hizmetler/index -> hizmetler)
+      route = route.replace(/\/index$/, '');
+      
       return route;
     })
     .filter((route) => {
@@ -45,10 +50,10 @@ export const GET: APIRoute = async () => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${staticPages.map(page => `
   <url>
-    <loc>${siteUrl}/${page}</loc>
+    <loc>${siteUrl}${page ? `/${page}` : ''}</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>${page === '' ? '1.0' : '0.7'}</priority>
   </url>`).join('')}
   
   ${postList.map(post => `
