@@ -14,7 +14,6 @@ const menuGroups = [
   },
   {
     label: "Pratik Araçlar",
-    //href: "/pratik-araclar",
     items: [
       { href: "/pratik-araclar/net-brut-maas", icon: "🧮", title: "Net - Brüt Maaş" },
       { href: "/pratik-araclar/kidem-ihbar-tazminati", icon: "📜", title: "Kıdem ve İhbar Tazminati" },
@@ -56,6 +55,7 @@ const menuGroups = [
 
         {menuGroups.map((group) => (
           <div class="relative group py-5">
+          {/* href varsa link (<a>), yoksa tıklanamayan ama el işareti olan span */}
             {group.href ? (
               <a href={group.href} class="flex items-center gap-1.5 text-ink-300 hover:text-white transition-colors">
                 <span>{group.label}</span>
