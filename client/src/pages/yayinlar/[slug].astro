@@ -5,7 +5,6 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import { supabase } from '../../lib/supabase';
 import YasalUyari from '../../components/YasalUyari.astro'; 
-import DOMPurify from 'isomorphic-dompurify';
 
 const { slug } = Astro.params;
 
@@ -36,12 +35,6 @@ try {
   Astro.response.status = 500;
   console.error('Yazı detayı çekilirken hata:', err);
   error = err.message || `Veritabanından yazı çekilemedi. Aranan slug: "${slug}"`;
-}
-
-// Güvenli HTML Temizliği (Sunucu ve Vercel Uyumlu)
-let cleanContent = '';
-if (post && post.content) {
-  cleanContent = DOMPurify.sanitize(post.content);
 }
 
 function getCategoryLabel(categoryKey: string): { title: string; style: string } {
@@ -111,8 +104,8 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
             )}
           </header>
 
-          <!-- İçerik Alanı (DOMPurify ile Güvenli Hale Getirildi) -->
-          <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 text-base sm:text-lg" set:html={cleanContent}>
+          <!-- İçerik Alanı -->
+          <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 text-base sm:text-lg" set:html={post.content}>
           </div>
 
           <YasalUyari />
