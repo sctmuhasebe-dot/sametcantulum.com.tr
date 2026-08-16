@@ -61,7 +61,6 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
   <main class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto space-y-8">
       
-      <!-- Geri Dön Butonu -->
       <div>
         <a 
           href="/yayinlar" 
@@ -71,7 +70,6 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
         </a>
       </div>
 
-      <!-- Hata Bildirim Alanı -->
       {error && (
         <div class="bg-red-50 text-red-700 p-6 rounded-2xl border border-red-200 max-w-xl mx-auto text-center space-y-3 shadow-sm">
           <p class="font-bold text-lg">⚠️ Makale Yüklenemedi</p>
@@ -82,7 +80,6 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
         </div>
       )}
 
-      <!-- Makale Detayı -->
       {post && (
         <article class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 shadow-sm space-y-8">
           
@@ -104,7 +101,6 @@ function getCategoryLabel(categoryKey: string): { title: string; style: string }
             )}
           </header>
 
-          <!-- İçerik Alanı -->
           <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4 text-base sm:text-lg" set:html={post.content}>
           </div>
 
