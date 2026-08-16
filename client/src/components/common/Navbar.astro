@@ -1,4 +1,6 @@
 ---
+import { pratikAraclarListesi } from '../../data/pratikAraclar';
+
 const menuGroups = [
   {
     label: "Kurumsal",
@@ -22,12 +24,7 @@ const menuGroups = [
   {
     label: "Pratik Araçlar",
     href: "/pratik-araclar",
-    items: [
-      { href: "/pratik-araclar/net-brut-maas", icon: "🧮", title: "Net - Brüt Maaş" },
-      { href: "/pratik-araclar/kidem-ihbar-tazminati", icon: "📜", title: "Kıdem ve İhbar Tazminati" },
-      { href: "/pratik-araclar/gecikme-zammi", icon: "⏱️", title: "Vergi Gecikme Zammı" },
-      { href: "/pratik-araclar/faydali-linkler", icon: "🔗", title: "Faydalı Linkler" },
-    ],
+    items: pratikAraclarListesi, // <--- Merkezi dosyadan otomatik beslenir
   },
   {
     label: "Yayinlar",
@@ -109,16 +106,22 @@ const menuGroups = [
       <a href="/" class="block px-3 py-3 rounded-xl text-sm font-semibold text-ink-300 hover:bg-ink-800 hover:text-white">Ana Sayfa</a>
       {menuGroups.map((group, i) => (
         <div class="border-t border-ink-800/60 pt-1 mt-1">
-          <button 
-            type="button" 
-            class="mobile-accordion-trigger w-full flex items-center justify-between px-3 py-3 text-sm font-semibold text-ink-300"
-            aria-label={`${group.label} menüsünü aç/kapat`}
-            aria-expanded="false"
-            aria-controls={`mobile-submenu-${i}`}
-          >
-            <span>{group.label}</span>
-            <span class="text-[10px] opacity-70 transition-transform duration-200">▼</span>
-          </button>
+          <div class="flex items-center justify-between px-3 py-3">
+            {group.href && group.href !== "#" ? (
+              <a href={group.href} class="text-sm font-semibold text-ink-300 hover:text-white flex-1">{group.label}</a>
+            ) : (
+              <span class="text-sm font-semibold text-ink-300 flex-1">{group.label}</span>
+            )}
+            <button 
+              type="button" 
+              class="mobile-accordion-trigger p-1 text-ink-300 hover:text-white"
+              aria-label={`${group.label} alt menüsünü aç/kapat`}
+              aria-expanded="false"
+              aria-controls={`mobile-submenu-${i}`}
+            >
+              <span class="text-[10px] opacity-70 transition-transform duration-200 inline-block">▼</span>
+            </button>
+          </div>
           <div id={`mobile-submenu-${i}`} class="mobile-submenu hidden pl-3 pb-1">
             {group.items.map((item: any) => (
               <a href={item.href} class="block px-3 py-2.5 text-xs font-semibold text-ink-300 hover:text-white">{item.title}</a>
@@ -148,12 +151,13 @@ const menuGroups = [
     const triggers = document.querySelectorAll('.mobile-accordion-trigger');
     triggers.forEach((trigger) => {
       (trigger as HTMLElement).onclick = () => {
-        const submenu = trigger.nextElementSibling;
+        const parentDiv = trigger.closest('div.flex');
+        const submenu = parentDiv?.nextElementSibling;
         const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
         
         trigger.setAttribute('aria-expanded', (!isExpanded).toString());
         
-        const arrow = trigger.querySelector('span:last-child');
+        const arrow = trigger.querySelector('span');
         if (arrow) {
           arrow.classList.toggle('rotate-180', !isExpanded);
         }
