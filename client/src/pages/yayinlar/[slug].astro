@@ -5,8 +5,8 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import { supabase } from '../../lib/supabase';
 import YasalUyari from '../../components/YasalUyari.astro'; 
-import { JSDOM } from 'jsdom';
-import DOMPurify from 'dompurify';
+// JSDOM yerine sunucu uyumlu isomorphic-dompurify kullanıyoruz
+import DOMPurify from 'isomorphic-dompurify';
 
 const { slug } = Astro.params;
 
@@ -15,7 +15,6 @@ let error: string | null = null;
 
 try {
   if (slug) {
-    // .single() yerine .maybeSingle() kullanarak kayıt bulunamadığında sunucu çökmesini önlüyoruz
     const { data, error: dbError } = await supabase
       .from('posts')
       .select('*')
@@ -40,12 +39,10 @@ try {
   error = err.message || `Veritabanından yazı çekilemedi. Aranan slug: "${slug}"`;
 }
 
-// Güvenli HTML Temizliği (DOMPurify ile XSS Koruması)
+// Güvenli HTML Temizliği (JSDOM gerektirmez, doğrudan sunucuda çalışır)
 let cleanContent = '';
 if (post && post.content) {
-  const window = new JSDOM('').window;
-  const purify = DOMPurify(window);
-  cleanContent = purify.sanitize(post.content);
+  cleanContent = DOMPurify.sanitize(post.content);
 }
 
 function getCategoryLabel(categoryKey: string): { title: string; style: string } {
