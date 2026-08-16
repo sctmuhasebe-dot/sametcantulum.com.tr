@@ -22,11 +22,21 @@ try {
       .single();
 
     if (dbError) throw dbError;
-    post = data;
+    
+    if (!data) {
+      // Eğer Supabase'den kayıt dönmezse 404 durum kodu ata
+      Astro.response.status = 404;
+      error = 'Aradığınız yayın bulunamadı.';
+    } else {
+      post = data;
+    }
   } else {
+    Astro.response.status = 404;
     error = 'Geçersiz yazı bağlantısı (Slug bulunamadı).';
   }
 } catch (err: any) {
+  // Veritabanı sorgu hatası veya kayıt bulunamadı durumlarında 404 dön
+  Astro.response.status = 404;
   console.error('Yazı detayı çekilirken hata:', err);
   error = err.message || `Veritabanından yazı çekilemedi. Aranan slug: "${slug}"`;
 }
