@@ -1,0 +1,23 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { kurumsalListesi } from '../../data/kurumsal';
+---
+
+<Layout title="Kurumsal | Samet Can Tulum" description="Ofisimiz, çalışma ilkelerimiz, yasal metinler ve kurumsal bilgilerimiz.">
+  <main class="min-h-screen py-16 px-4 max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-slate-900 mb-8">Kurumsal</h1>
+    <p class="text-slate-600 mb-12">Ofisimizin çalışma prensipleri, mesleki geçmişimiz ve yasal uyumluluk metinlerimize aşağıdan ulaşabilirsiniz.</p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      {kurumsalListesi.map((item) => (
+        <a href={item.href} class="p-6 rounded-2xl bg-white border border-slate-200 hover:border-emerald-500 transition-all shadow-sm hover:shadow-md flex items-start gap-4">
+          <span class="text-3xl">{item.icon}</span>
+          <div>
+            <h2 class="font-bold text-slate-900">{item.title}</h2>
+            <p class="text-sm text-slate-500 mt-1">{item.desc}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </main>
+</Layout>

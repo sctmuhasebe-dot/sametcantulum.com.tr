@@ -1,15 +1,12 @@
 ---
 import { pratikAraclarListesi } from '../../data/pratikAraclar';
+import { kurumsalListesi } from '../../data/kurumsal'; // <--- Kurumsal verisi eklendi
 
 const menuGroups = [
   {
     label: "Kurumsal",
-    href: "#",
-    items: [
-      { href: "/hakkimda", icon: "👤", title: "Hakkımızda" },
-      { href: "/vizyon-misyon", icon: "🎯", title: "Vizyon & Misyon" },
-      { href: "/sik-sorulan-sorular", icon: "❓", title: "Sık Sorulan Sorular" },
-    ],
+    href: "/kurumsal", // <--- Artık ana sayfaya yönlendiriliyor ve tıklanabilir
+    items: kurumsalListesi, // <--- Merkezi dosyadan otomatik beslenir
   },
   {
     label: "Hizmetlerimiz",
@@ -24,7 +21,7 @@ const menuGroups = [
   {
     label: "Pratik Araçlar",
     href: "/pratik-araclar",
-    items: pratikAraclarListesi, // <--- Merkezi dosyadan otomatik beslenir
+    items: pratikAraclarListesi,
   },
   {
     label: "Yayinlar",
