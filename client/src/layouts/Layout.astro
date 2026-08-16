@@ -1,8 +1,8 @@
 ---
 import Navbar from '../components/common/Navbar.astro';
 import CookieBanner from '../components/common/CookieBanner.astro';
-import { Image } from 'astro:assets'; // 🔥 YENİ EKLENEN
-import logoImage from '../../public/images/logo.png'; // 🔥 YENİ EKLENEN (Astro'nun optimize edebilmesi için local import)
+import { Image } from 'astro:assets';
+import logoImage from '../../public/images/logo.png';
 import '../styles/global.css';
 
 interface Props {
@@ -22,6 +22,42 @@ const {
   type = 'website',
   publishedTime
 } = Astro.props;
+
+// Yasal/Politika sayfalarını tespit edip noindex vermek için kontrol:
+const pathname = Astro.url.pathname;
+const isLegalPage = [
+  '/kvkk-aydinlatma-metni',
+  '/acik-riza-metni',
+  '/taahhutname',
+  '/cerez-politikasi'
+].some(path => pathname.includes(path));
+
+// Dinamik Breadcrumb Schema Oluşturucu (Görsel kirlilik yaratmadan SEO'yu besler)
+const getBreadcrumbItems = () => {
+  const items = [{ "@type": "ListItem", "position": 1, "name": "Ana Sayfa", "item": "https://www.sametcantulum.com.tr" }];
+  
+  if (pathname.includes('/yayinlar')) {
+    items.push({ "@type": "ListItem", "position": 2, "name": "Yayınlar", "item": "https://www.sametcantulum.com.tr/yayinlar" });
+    if (pathname !== '/yayinlar' && pathname !== '/yayinlar/') {
+      items.push({ "@type": "ListItem", "position": 3, "name": title.split('|')[0].trim(), "item": canonicalURL });
+    }
+  } else if (pathname.includes('/hizmetler')) {
+    items.push({ "@type": "ListItem", "position": 2, "name": "Hizmetler", "item": "https://www.sametcantulum.com.tr/hizmetler" });
+    if (pathname !== '/hizmetler' && pathname !== '/hizmetler/') {
+      items.push({ "@type": "ListItem", "position": 3, "name": title.split('|')[0].trim(), "item": canonicalURL });
+    }
+  } else if (pathname !== '/' && pathname !== '') {
+    items.push({ "@type": "ListItem", "position": 2, "name": title.split('|')[0].trim(), "item": canonicalURL });
+  }
+  
+  return items;
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": getBreadcrumbItems()
+};
 ---
 
 <!doctype html>
@@ -32,6 +68,9 @@ const {
     <link rel="icon" type="image/svg+xml" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
 
+    <!-- Yasal sayfalar için noindex kuralı -->
+    {isLegalPage && <meta name="robots" content="noindex, follow" />}
+
     <!-- Google Search Console Doğrulama Etiketi -->
     <meta name="google-site-verification" content="iIJXAI_oQx52LveBdBOO7rOlgKkD36K-O0Usx1CLrSk" />
 
@@ -39,6 +78,9 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+
+    <!-- Açık Görünmeyen Breadcrumb JSON-LD Şeması (SEO Dostu) -->
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
 
     <!-- Open Graph / Sosyal Medya Paylaşım Etiketleri -->
     <meta property="og:type" content={type} />
@@ -151,7 +193,7 @@ const {
       <slot />
     </main>
 
-    <!-- Alt Bilgi / Footer (Erişilebilirlik için metin kontrastları artırıldı) -->
+    <!-- Alt Bilgi / Footer -->
     <footer class="bg-ink-900 text-gray-300 mt-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 min-h-[220px]">
@@ -160,14 +202,14 @@ const {
           <div class="lg:col-span-2 space-y-3">
             <a href="/" class="flex items-center gap-3.5 group shrink-0 inline-flex">
               <div class="h-10 w-10 rounded-xl bg-white/90 border border-white/20 p-1 flex items-center justify-center shadow-md shadow-brand-500/10 group-hover:bg-white group-hover:scale-105 transition-all shrink-0 overflow-hidden">
-  <Image 
-    src={logoImage} 
-    alt="SMMM Samet Can Tulum Logo"
-    width={53}
-    height={53}
-    class="h-full w-full object-contain filter brightness-90 contrast-125 group-hover:brightness-100 transition-all"
-  />
-</div>
+                <Image 
+                  src={logoImage} 
+                  alt="SMMM Samet Can Tulum Logo"
+                  width={53}
+                  height={53}
+                  class="h-full w-full object-contain filter brightness-90 contrast-125 group-hover:brightness-100 transition-all"
+                />
+              </div>
 
               <div class="flex flex-col">
                 <span class="font-bold text-base tracking-tight leading-none text-white group-hover:text-emerald-400 transition-colors">
