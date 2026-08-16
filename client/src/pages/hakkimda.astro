@@ -236,6 +236,40 @@ const uzmanlikAlanlari = [
   </main>
 </Layout>
 
+<!-- SEO: FAQ Schema Eklemesi -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Mali müşavirlik hizmeti işletmeme ne tür avantajlar sağlar?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "İşletmenizin yasal yükümlülüklerini hatasız ve zamanında yerine getirerek olası vergi cezalarının önüne geçer. Ayrıca faydalanabileceğiniz vergi indirimleri, istisnalar ve SGK teşviklerini analiz ederek maliyet avantajı yaratır."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Süreçler ve evrak takibi nasıl yürütülüyor?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Geleneksel evrak takibinin yanı sıra e-Fatura, e-Defter ve dijital muhasebe entegrasyonları ile süreçlerimizi tamamen dijital ortamda, hızlı ve şeffaf bir şekilde yönetiyoruz."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Şirket kuruluşu ne kadar sürer?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Şahıs şirketleri gerekli belgelerin tamamlanması halinde genellikle aynı gün içinde kurulabilmektedir. Limited ve Anonim şirketlerin tescil süreçleri ise ortalama 2-3 iş günü içerisinde tamamlanmaktadır."
+      }
+    }
+  ]
+}
+</script>
+
 <!-- MENÜ KAYDIRMA İÇİN HİZALAMA AYARI -->
 <style>
   html {
