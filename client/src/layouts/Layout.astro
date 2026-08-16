@@ -1,6 +1,8 @@
 ---
 import Navbar from '../components/common/Navbar.astro';
 import CookieBanner from '../components/common/CookieBanner.astro';
+import { Image } from 'astro:assets'; // 🔥 YENİ EKLENEN
+import logoImage from '../../public/images/logo.png'; // 🔥 YENİ EKLENEN (Astro'nun optimize edebilmesi için local import)
 import '../styles/global.css';
 
 interface Props {
