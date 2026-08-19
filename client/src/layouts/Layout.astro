@@ -68,6 +68,9 @@ const breadcrumbSchema = {
     <link rel="icon" type="image/svg+xml" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
 
+    <!-- Content Security Policy (CSP) - Google Maps, Supabase ve GA4 İzinleri -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://www.google.com; frame-src 'self' https://www.google.com https://www.google.com/maps/;" />
+
     <!-- Yasal sayfalar için noindex kuralı -->
     {isLegalPage && <meta name="robots" content="noindex, follow" />}
 
