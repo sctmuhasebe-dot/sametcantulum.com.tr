@@ -13,8 +13,8 @@ import { slugify } from '../../lib/utils';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>İçerik Yönetimi | Samet Can Tulum</title>
     <meta name="robots" content="noindex, nofollow" />
-    <!-- TinyMCE Zengin Metin Editörü CDN -->
-<script is:inline src="/tinymce/tinymce.min.js"></script>
+    <!-- TinyMCE Zengin Metin Editörü (Self-Hosted) -->
+    <script is:inline src="/tinymce/tinymce.min.js"></script>
   </head>
   <body class="bg-slate-900 text-slate-100 min-h-screen p-6 font-sans">
 
@@ -128,9 +128,12 @@ import { slugify } from '../../lib/utils';
         const loader = document.getElementById('auth-guard-loader');
         const mainContent = document.getElementById('admin-main-content');
 
-        // TinyMCE Editör Kurulumu
+        // TinyMCE Editör Kurulumu (Güncellendi)
         tinymce.init({
           selector: '#content',
+          license_key: 'gpl',
+          base_url: '/tinymce',
+          suffix: '.min',
           height: 350,
           menubar: false,
           plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table code help wordcount',
