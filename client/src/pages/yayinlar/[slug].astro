@@ -68,12 +68,12 @@ if (post) {
 function getCategoryLabel(categoryKey: string): { title: string; style: string } {
   switch (categoryKey?.toLowerCase()) {
     case 'mevzuat':
-      return { title: '⚖️ Mevzuat & Resmi Yazılar', style: 'bg-amber-50 text-amber-700 border-amber-200' };
+      return { title: ' Mevzuat & Resmi Yazılar', style: 'bg-amber-50 text-amber-700 border-amber-200' };
     case 'makaleler':
     case 'makale':
-      return { title: '📝 Makale', style: 'bg-blue-50 text-blue-700 border-blue-200' };
+      return { title: ' Makale', style: 'bg-blue-50 text-blue-700 border-blue-200' };
     case 'blog':
-      return { title: '💡 Blog & Sektörel Yorum', style: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+      return { title: ' Blog & Sektörel Yorum', style: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
     default:
       return { title: categoryKey || 'Genel', style: 'bg-slate-100 text-slate-700 border-slate-200' };
   }
