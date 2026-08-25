@@ -17,6 +17,14 @@ export const GET: APIRoute = async () => {
   }
   const postList = posts || [];
 
+  // YASAL VE NOINDEX OLAN SAYFALARIN LİSTESİ (Sitemap'e girmeyecek)
+  const excludedPages = [
+    'kvkk-aydinlatma-metni',
+    'acik-riza-metni',
+    'taahhutname',
+    'cerez-politikasi'
+  ];
+
   // 2. SRC/PAGES DİZİNİNDEKİ TÜM .ASTRO SAYFALARINI OTOMATİK TARIYORUZ
   const pageFiles = import.meta.glob('./**/*.astro');
   
@@ -31,12 +39,14 @@ export const GET: APIRoute = async () => {
       return route;
     })
     .filter((route) => {
-      // Admin paneli, dinamik rotalar ([slug]), 404 ve API uç noktalarını hariç tutuyoruz
+      // Admin paneli, dinamik rotalar ([slug]), 404, API uç noktaları 
+      // VE noindex olan yasal sayfaları hariç tutuyoruz
       if (
         route.startsWith('admin') || 
         route.includes('[') || 
         route === '404' ||
-        route.includes('api/')
+        route.includes('api/') ||
+        excludedPages.includes(route) // <-- BURASI EKLENDİ
       ) {
         return false;
       }
@@ -44,9 +54,6 @@ export const GET: APIRoute = async () => {
     });
 
   // 3. (İsteğe Bağlı) MERKEZİ VERİLERDEN (Örn: pratikAraclar) DİNAMİK ROTALAR ÜRETME
-  // Eğer pratik araçlar alt sayfalarına sahipse buradan otomatik ekletebilirsiniz.
-  // const aracSayfalari = pratikAraclarListesi.map(arac => arac.href.replace(/^\//, ''));
-
   // Tüm statik sayfaları ve varsa ek rotaları birleştiriyoruz
   const allStaticPages = [...new Set([...staticPages])];
 
