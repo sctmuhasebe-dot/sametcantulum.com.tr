@@ -74,13 +74,13 @@ function getCategoryLabel(categoryKey: string) {
     .replace(/ç/g, 'c');
   
   if (key.includes('mevzuat') || key.includes('resmi-yazi') || key.includes('resmi')) {
-    return '⚖️ Mevzuat & Resmi Yazılar';
+    return ' Mevzuat & Resmi Yazılar';
   }
   if (key.includes('makale')) {
-    return '📝 Makaleler';
+    return ' Makaleler';
   }
   if (key.includes('blog') || key.includes('yorum')) {
-    return '💡 Blog & Yorumlar';
+    return ' Blog & Yorumlar';
   }
 
   return categoryKey
