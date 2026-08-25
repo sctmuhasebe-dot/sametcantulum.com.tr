@@ -4,6 +4,9 @@ export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase';
+import PhoneIcon from '../components/icons/phone.svg';
+import EmailIcon from '../components/icons/email.svg';
+import LocationIcon from '../components/icons/location.svg';
 
 // Varsayılan İletişim Bilgileri (Fallback)
 let siteSettings = {
@@ -47,8 +50,8 @@ try {
         
         <!-- Telefon -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-            📞
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <PhoneIcon class="w-6 h-6" />
           </div>
           <div>
             <h3 class="font-bold text-slate-900 text-sm">Telefon</h3>
@@ -61,8 +64,8 @@ try {
 
         <!-- E-posta -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-            ✉️
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <EmailIcon class="w-6 h-6" />
           </div>
           <div>
             <h3 class="font-bold text-slate-900 text-sm">E-Posta</h3>
@@ -75,8 +78,8 @@ try {
 
         <!-- Ofis Adresi -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-            📍
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <LocationIcon class="w-6 h-6" />
           </div>
           <div>
             <h3 class="font-bold text-slate-900 text-sm">Ofis Adresi</h3>
@@ -200,7 +203,6 @@ try {
       const formData = new FormData(form);
       const name = formData.get('name');
       
-      // Türkçe karakterleri ve büyük İ harfini güvenli İngilizce karşılıklarına çeviren süzgeç
       const emailRaw = formData.get('email');
       const email = typeof emailRaw === 'string' 
         ? emailRaw
