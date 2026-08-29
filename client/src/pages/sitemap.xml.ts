@@ -3,6 +3,14 @@ import { supabase } from '../lib/supabase';
 // Eğer pratik araçları da dinamik eklemek isterseniz buraya import edebilirsiniz:
 // import { pratikAraclarListesi } from '../data/pratikAraclar';
 
+// KRİTİK: Bu route'u SSR (dinamik) yapıyoruz. output:'static' ortamında
+// prerender belirtilmezse bu dosya BUILD ANINDA bir kez oluşturulup
+// dondurulur; yeni yazılar sitemap'e hiç girmez, silinen yazılar ise
+// GSC'de "Bulunamadı (404)" olarak birikir. prerender=false ile her
+// istekte Supabase'deki güncel veri baz alınır (yayinlar/index.astro
+// ve [slug].astro ile aynı davranış).
+export const prerender = false;
+
 export const GET: APIRoute = async () => {
   const siteUrl = 'https://www.sametcantulum.com.tr';
   const currentDate = new Date().toISOString().split('T')[0];
@@ -15,7 +23,13 @@ export const GET: APIRoute = async () => {
   if (error) {
     console.error('Sitemap blog verileri çekilemedi:', error.message);
   }
-  const postList = posts || [];
+  // slug'ı boş/null olan kayıtları eliyoruz — aksi halde
+  // ".../yayinlar/undefined" veya ".../yayinlar/" gibi çöp URL'ler
+  // sitemap'e (ve dolayısıyla Google indeksine) girebiliyordu.
+  const postList = (posts || []).filter(
+    (p): p is { slug: string; updated_at: string | null } =>
+      typeof p.slug === 'string' && p.slug.trim().length > 0
+  );
 
   // YASAL VE NOINDEX OLAN SAYFALARIN LİSTESİ (Sitemap'e girmeyecek)
   const excludedPages = [

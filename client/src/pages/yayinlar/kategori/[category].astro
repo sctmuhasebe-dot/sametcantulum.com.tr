@@ -25,7 +25,9 @@ try {
   const { data, error: dbError } = await query;
 
   if (dbError) throw dbError;
-  posts = data || [];
+  // slug'ı olmayan kayıtları eliyoruz: /yayinlar/undefined gibi
+  // geçersiz linklerin oluşmasını ve indekslenmesini önlemek için.
+  posts = (data || []).filter((p: any) => typeof p.slug === 'string' && p.slug.trim().length > 0);
 } catch (err: any) {
   console.error('Kategori yazıları çekilirken hata:', err);
   error = err.message || 'Yazılar yüklenirken bir sorun oluştu.';

@@ -28,7 +28,10 @@ async function getCachedPosts() {
         .limit(3);
 
       if (!error && data) {
-        latestPosts = data;
+        // slug'ı olmayan kayıtları listeleme: aksi halde
+        // /yayinlar/undefined gibi geçersiz linkler üretilip
+        // Google tarafından keşfedilip 404 olarak indekslenebiliyor.
+        latestPosts = data.filter((p: any) => typeof p.slug === 'string' && p.slug.trim().length > 0);
         cacheStore.posts = { data: latestPosts, timestamp: now };
       } else if (cacheStore.posts) {
         latestPosts = cacheStore.posts.data;

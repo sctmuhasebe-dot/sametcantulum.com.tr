@@ -1,8 +1,23 @@
   {
     "redirects": [
       {
+        "source": "/sektorel-cozumler",
+        "destination": "/hizmetler",
+        "permanent": true
+      },
+      {
         "source": "/sektorel-cozumler/:path*",
         "destination": "/hizmetler",
+        "permanent": true
+      },
+      {
+        "source": "/hizmetler/kdv-iadesi",
+        "destination": "/hizmetler/vergi-danismanligi",
+        "permanent": true
+      },
+      {
+        "source": "/:path*/",
+        "destination": "/:path*",
         "permanent": true
       }
     ],

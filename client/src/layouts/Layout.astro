@@ -14,11 +14,26 @@ interface Props {
   publishedTime?: string;
 }
 
+// Temiz, deterministik canonical URL üretici.
+// NOT: Astro.url.href kullanmıyoruz çünkü bu, isteğin geldiği ham URL'i
+// (sondaki "/" farkı, ?utm_source= gibi query string'ler, vb.) birebir yansıtır.
+// Bu da her varyantın kendini canonical ilan etmesine ve Google'ın
+// "Kopya, Google kullanıcıdan farklı bir standart sayfa seçti" hatası
+// vermesine neden oluyordu. Bunun yerine sadece pathname'den,
+// trailingSlash: 'never' ayarıyla tutarlı, temiz bir canonical üretiyoruz.
+const buildCleanCanonical = () => {
+  let path = Astro.url.pathname;
+  if (path.length > 1 && path.endsWith('/')) {
+    path = path.slice(0, -1);
+  }
+  return new URL(path, Astro.site).href;
+};
+
 const { 
   title = "Samet Can Tulum, Serbest Muhasebeci Mali Müşavir, Muratpaşa, Antalya", 
   description = "Samet Can Tulum, Serbest Muhasebeci Mali Müşavir, Muratpaşa, Antalya bölgesinde mali müşavirlik, vergi danışmanlığı ve muhasebe hizmetleri sunmaktadır.",
   image = "/og-image.jpg",
-  canonicalURL = Astro.url.href,
+  canonicalURL = buildCleanCanonical(),
   type = 'website',
   publishedTime
 } = Astro.props;
